@@ -1,0 +1,183 @@
+<!-- Save as: src/main/resources/liveTemplates/Prismio.xml -->
+<templateSet group="Prismio">
+    <!-- Main function -->
+    <template name="main" value="fn main() {&#10;    $END$&#10;}"
+              description="Create main function"
+              toReformat="true"
+              toShortenFQNames="true">
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- Function with parameters -->
+    <template name="fn" value="fn $NAME$($PARAMS$) -&gt; $TYPE$ {&#10;    $END$&#10;}"
+              description="Create function with return type"
+              toReformat="true"
+              toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;name&quot;" alwaysStopAt="true" />
+        <variable name="PARAMS" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true" />
+        <variable name="TYPE" expression="" defaultValue="&quot;Int&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- Function without return type -->
+    <template name="fnv" value="fn $NAME$($PARAMS$) {&#10;    $END$&#10;}"
+              description="Create void function"
+              toReformat="true"
+              toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;name&quot;" alwaysStopAt="true" />
+        <variable name="PARAMS" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- Struct -->
+    <template name="struct" value="struct $NAME$ {&#10;    $FIELD$: $TYPE$,&#10;    $END$&#10;}"
+              description="Create struct"
+              toReformat="true"
+              toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;Name&quot;" alwaysStopAt="true" />
+        <variable name="FIELD" expression="" defaultValue="&quot;field&quot;" alwaysStopAt="true" />
+        <variable name="TYPE" expression="" defaultValue="&quot;Int&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- Enum -->
+    <template name="enum" value="enum $NAME$ {&#10;    $VARIANT1$,&#10;    $VARIANT2$,&#10;    $END$&#10;}"
+              description="Create enum"
+              toReformat="true"
+              toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;Name&quot;" alwaysStopAt="true" />
+        <variable name="VARIANT1" expression="" defaultValue="&quot;Variant1&quot;" alwaysStopAt="true" />
+        <variable name="VARIANT2" expression="" defaultValue="&quot;Variant2&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- Implementation -->
+    <template name="impl" value="impl $NAME$ {&#10;    fn $METHOD$() {&#10;        $END$&#10;    }&#10;}"
+              description="Create implementation block"
+              toReformat="true"
+              toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;Type&quot;" alwaysStopAt="true" />
+        <variable name="METHOD" expression="" defaultValue="&quot;method&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- If statement -->
+    <template name="if" value="if ($CONDITION$) {&#10;    $END$&#10;}"
+              description="Create if statement"
+              toReformat="true"
+              toShortenFQNames="true">
+        <variable name="CONDITION" expression="" defaultValue="&quot;true&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- If-else statement -->
+    <template name="ife" value="if ($CONDITION$) {&#10;    $THEN$&#10;} else {&#10;    $END$&#10;}"
+              description="Create if-else statement"
+              toReformat="true"
+              toShortenFQNames="true">
+        <variable name="CONDITION" expression="" defaultValue="&quot;true&quot;" alwaysStopAt="true" />
+        <variable name="THEN" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- While loop -->
+    <template name="while" value="while ($CONDITION$) {&#10;    $END$&#10;}"
+              description="Create while loop"
+              toReformat="true"
+              toShortenFQNames="true">
+        <variable name="CONDITION" expression="" defaultValue="&quot;true&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- For loop -->
+    <template name="for" value="for ($VAR$ in $ITER$) {&#10;    $END$&#10;}"
+              description="Create for loop"
+              toReformat="true"
+              toShortenFQNames="true">
+        <variable name="VAR" expression="" defaultValue="&quot;item&quot;" alwaysStopAt="true" />
+        <variable name="ITER" expression="" defaultValue="&quot;collection&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- Match expression -->
+    <template name="match" value="match $VALUE$ {&#10;    $PATTERN$ =&gt; $RESULT$,&#10;    _ =&gt; $DEFAULT$&#10;}"
+              description="Create match expression"
+              toReformat="true"
+              toShortenFQNames="true">
+        <variable name="VALUE" expression="" defaultValue="&quot;value&quot;" alwaysStopAt="true" />
+        <variable name="PATTERN" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+        <variable name="RESULT" expression="" defaultValue="&quot;result&quot;" alwaysStopAt="true" />
+        <variable name="DEFAULT" expression="" defaultValue="&quot;default&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- Variable declaration -->
+    <template name="let" value="let $NAME$ = $VALUE$;"
+              description="Create variable"
+              toReformat="false"
+              toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;var&quot;" alwaysStopAt="true" />
+        <variable name="VALUE" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- Mutable variable -->
+    <template name="letm" value="let mut $NAME$ = $VALUE$;"
+              description="Create mutable variable"
+              toReformat="false"
+              toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;var&quot;" alwaysStopAt="true" />
+        <variable name="VALUE" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- Println -->
+    <template name="pln" value="println($TEXT$);"
+              description="Print line"
+              toReformat="false"
+              toShortenFQNames="true">
+        <variable name="TEXT" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+
+    <!-- Extern function -->
+    <template name="extern" value="extern fn $NAME$($PARAMS$) -&gt; $TYPE$"
+              description="External function declaration"
+              toReformat="false"
+              toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="&quot;name&quot;" alwaysStopAt="true" />
+        <variable name="PARAMS" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true" />
+        <variable name="TYPE" expression="" defaultValue="&quot;Int&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="PRISMIO" value="true" />
+        </context>
+    </template>
+</templateSet>

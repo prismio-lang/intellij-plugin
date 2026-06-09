@@ -1,0 +1,183 @@
+<idea-plugin>
+    <id>io.prismio</id>
+    <name>Prismio Language Support</name>
+    <vendor url="https://prismio.org">
+        Prismio
+    </vendor>
+
+    <description><![CDATA[
+        <h2>Prismio Language Support</h2>
+        <p>
+            Language support for Prismio (.psm files) in JetBrains IDEs.
+        </p>
+
+        <h3>Features:</h3>
+        <ul>
+            <li><b>Syntax Highlighting</b> - Lexer-based and semantic highlighting for keywords, types, functions, operators, strings, and comments</li>
+            <li><b>Code Completion</b> - Keyword, type, and live template suggestions</li>
+            <li><b>Code Formatting</b> - Automatic formatting with customizable code style settings</li>
+            <li><b>Live Templates</b> - Snippets for fn, struct, enum, impl, if, while, for, match, let, and more</li>
+            <li><b>Brace & Quote Matching</b> - Auto-closing of parentheses, brackets, braces, and quotes</li>
+            <li><b>Smart Indentation</b> - Brace-aware indentation on Enter</li>
+            <li><b>Comment Toggling</b> - Line and block comment support (Ctrl+/)</li>
+            <li><b>Structure View</b> - Navigate code structure via the Structure panel</li>
+            <li><b>Find Usages & Rename</b> - Basic find usages and rename refactoring</li>
+            <li><b>Quick Documentation</b> - Hover documentation for Prismio elements</li>
+            <li><b>Color Settings</b> - Fully configurable color scheme for all token types</li>
+            <li><b>Spellchecking</b> - Integrated spell checking for strings and comments</li>
+            <li><b>Go to Symbol</b> - Navigate to symbols across the project</li>
+            <li><b>New File Action</b> - Create .psm files from the New menu</li>
+        </ul>
+    ]]></description>
+
+    <change-notes><![CDATA[
+        <h3>Version 1.0.0</h3>
+        <ul>
+            <li>Syntax highlighting with semantic annotations for functions, structs, enums, and parameters</li>
+            <li>Code completion for keywords, types, and live templates</li>
+            <li>Code formatting with customizable style settings</li>
+            <li>15 live templates (fn, struct, enum, impl, if, while, for, match, let, and more)</li>
+            <li>Brace, bracket, and quote auto-closing</li>
+            <li>Smart brace-aware indentation on Enter</li>
+            <li>Line and block comment toggling</li>
+            <li>Structure view and navigation bar integration</li>
+            <li>Find usages, rename refactoring, and Go to Symbol</li>
+            <li>Quick documentation provider</li>
+            <li>Configurable color settings page</li>
+            <li>Spellchecking in strings and comments</li>
+            <li>New Prismio File action with file icon</li>
+            <li>Compatible with IntelliJ IDEA, CLion, and all JetBrains IDEs (242+)</li>
+        </ul>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- File Type -->
+        <fileType
+                name="Prismio File"
+                implementationClass="io.prismio.PsFileType"
+                fieldName="INSTANCE"
+                language="Prismio"
+                extensions="psm"/>
+
+        <!-- Parser and Lexer -->
+        <lang.parserDefinition
+                language="Prismio"
+                implementationClass="io.prismio.SimpleParserDefinition"/>
+
+        <!-- Syntax Highlighting -->
+        <lang.syntaxHighlighterFactory
+                language="Prismio"
+                implementationClass="io.prismio.highlighter.PsSyntaxHighlighterFactory"/>
+
+        <!-- Color Settings -->
+        <colorSettingsPage
+                implementation="io.prismio.settings.PrismioColorSettingsPage"/>
+
+        <!-- Default Color Attributes for Prismio -->
+        <additionalTextAttributes scheme="Default" file="colorSchemes/PrismioDefault.xml"/>
+        <additionalTextAttributes scheme="Darcula" file="colorSchemes/PrismioDefault.xml"/>
+
+        <!-- Annotator for Semantic Highlighting -->
+        <annotator
+                language="Prismio"
+                implementationClass="io.prismio.annotator.PrismioAnnotator"/>
+
+        <!-- Code Completion -->
+        <completion.contributor
+                language="Prismio"
+                implementationClass="io.prismio.completion.PrismioCompletionContributor"/>
+
+        <!-- Code Formatting -->
+        <lang.formatter
+                language="Prismio"
+                implementationClass="io.prismio.PrismioFormattingModelBuilder"/>
+
+        <!-- Code Style Settings -->
+        <codeStyleSettingsProvider
+                implementation="io.prismio.SimpleCodeStyleSettingsProvider"/>
+
+        <langCodeStyleSettingsProvider
+                implementation="io.prismio.LanguageCodeStyleSettingsProvider"/>
+
+        <!-- Comment Support -->
+        <lang.commenter
+                language="Prismio"
+                implementationClass="io.prismio.Commenter"/>
+
+        <!-- Brace Matching -->
+        <lang.braceMatcher
+                language="Prismio"
+                implementationClass="io.prismio.PrismioBraceMatcher"/>
+
+        <!-- Quote Handler -->
+        <lang.quoteHandler
+                language="Prismio"
+                implementationClass="io.prismio.PrismioQuoteHandler"/>
+
+        <!-- Typed Handler for Auto-completion -->
+        <typedHandler
+                implementation="io.prismio.handler.PrismioTypedHandler"/>
+
+        <!-- Enter Handler for Indentation -->
+        <enterHandlerDelegate
+                implementation="io.prismio.handler.PrismioEnterHandler"/>
+
+        <!-- Structure View -->
+        <lang.psiStructureViewFactory
+                language="Prismio"
+                implementationClass="io.prismio.SimpleStructureViewFactory"/>
+
+        <!-- Navigation Bar -->
+        <navbar
+                implementation="io.prismio.SimpleStructureAwareNavbar"/>
+
+        <!-- Icon Provider -->
+        <iconProvider
+                implementation="io.prismio.providers.PsPropertyIconProvider"/>
+
+        <!-- File Templates -->
+        <internalFileTemplate name="PrismioFile"/>
+        <fileTemplateGroup
+                implementation="io.prismio.template.PrismioTemplateGroupDescriptor"/>
+
+        <!-- Find Usages -->
+        <lang.findUsagesProvider
+                language="Prismio"
+                implementationClass="io.prismio.SimpleFindUsagesProvider"/>
+
+        <!-- Refactoring Support -->
+        <lang.refactoringSupport
+                language="Prismio"
+                implementationClass="io.prismio.SimpleRefactoringSupportProvider"/>
+
+        <!-- Documentation Provider -->
+        <lang.documentationProvider
+                language="Prismio"
+                implementationClass="io.prismio.SimpleDocumentationProvider"/>
+
+
+
+        <!-- Spellchecking -->
+        <spellchecker.support
+                language="Prismio"
+                implementationClass="io.prismio.SimpleSpellcheckingStrategy"/>
+
+        <!-- Go to Symbol -->
+        <gotoSymbolContributor
+                implementation="io.prismio.SimpleChooseByNameContributor"/>
+    </extensions>
+
+    <actions>
+        <!-- New File Action -->
+        <action
+                id="io.prismio.template.CreateClassAction"
+                class="io.prismio.template.CreateClassAction"
+                text="Prismio File"
+                description="Create new Prismio file"
+                icon="/icons/prismio.png">
+            <add-to-group group-id="NewGroup" anchor="first"/>
+        </action>
+    </actions>
+</idea-plugin>

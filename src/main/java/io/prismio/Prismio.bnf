@@ -1,0 +1,50 @@
+{
+  parserClass="io.prismio.parser.PrismioParser"
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Prismio"
+  psiImplClassSuffix="Impl"
+  psiPackage="io.prismio.psi"
+  psiImplPackage="io.prismio.psi.impl"
+
+  elementTypeHolderClass="io.prismio.psi.PrismioTypes"
+  elementTypeClass="io.prismio.psi.PrismioElementType"
+  tokenTypeClass="io.prismio.psi.PrismioTokenType"
+}
+
+// Root rule - a Prismio file is just a sequence of items
+prismioFile ::= item_*
+
+// An item can be any token the lexer emits
+// Simplified grammar - just for lexical highlighting; full AST is built by the C++ compiler
+private item_ ::= (
+  KEYWORD
+  | TYPE_KEYWORD
+  | IDENTIFIER
+  | STRING_LITERAL
+  | CHARACTER_LITERAL
+  | BOOLEAN
+  | INTEGER
+  | FLOAT
+  | MULTILINE_COMMENT
+  | SINGLE_LINE_COMMENT
+  | LPAREN
+  | RPAREN
+  | LBRACE
+  | RBRACE
+  | LBRACKET
+  | RBRACKET
+  | COMMA
+  | COLON
+  | DOT
+  | SEMICOLON
+  | ARROW
+  | FAT_ARROW
+  | RELATIONAL_OP
+  | ASSIGNMENT_OP
+  | UNARY_OP
+  | LOGICAL_OP
+  | ARITHMETIC_OP
+  | COMPARISON
+  | BITWISE
+)

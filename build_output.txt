@@ -1,0 +1,60 @@
+﻿Reusing configuration cache.
+> Task :initializeIntellijPlatformPlugin
+> Task :patchPluginXml UP-TO-DATE
+> Task :generateManifest UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :verifyPluginProjectConfiguration UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :instrumentCode UP-TO-DATE
+> Task :jar UP-TO-DATE
+> Task :instrumentedJar UP-TO-DATE
+> Task :composedJar UP-TO-DATE
+> Task :prepareSandbox FAILED
+.\gradlew.bat : 
+At line:1 char:1
++ .\gradlew.bat buildPlugin 2>&1 | 
+Out-File -FilePath build_output.txt  
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpe 
+   cified: (:String) [], RemoteExce  
+  ption
+    + FullyQualifiedErrorId : Native 
+   CommandError
+ 
+FAILURE: Build failed with an 
+exception.
+
+* What went wrong:
+Execution failed for task 
+':prepareSandbox'.
+> Could not copy file 'C:\Users\vibra
+\OneDrive\Desktop\Projects\Prismio\pr
+ismio-intellij\build\libs\PrismioPlug
+in.jar' to 'C:\Users\vibra\OneDrive\D
+esktop\Projects\Prismio\prismio-intel
+lij\build\idea-sandbox\IC-2024.2.4\pl
+ugins\PrismioPlugin\lib\PrismioPlugin
+.jar'.
+   > C:\Users\vibra\OneDrive\Desktop\
+Projects\Prismio\prismio-intellij\bui
+ld\idea-sandbox\IC-2024.2.4\plugins\P
+rismioPlugin\lib\PrismioPlugin.jar 
+(The requested operation cannot be 
+performed on a file with a 
+user-mapped section open)
+
+* Try:
+> Run with --stacktrace option to 
+get the stack trace.
+11 actionable tasks: 2 executed, 9 up-to-date
+Configuration cache entry reused.
+> Run with --info or --debug option 
+to get more log output.
+> Run with --scan to get full 
+insights.
+> Get more help at 
+https://help.gradle.org.
+
+BUILD FAILED in 1s
