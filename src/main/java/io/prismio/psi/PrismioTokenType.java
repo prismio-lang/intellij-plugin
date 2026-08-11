@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 public class PrismioTokenType extends IElementType {
-
   public PrismioTokenType(@NotNull @NonNls String debugName) {
     super(debugName, PrismioLanguage.INSTANCE);
   }
@@ -15,5 +14,4 @@ public class PrismioTokenType extends IElementType {
   public String toString() {
     return "PrismioTokenType." + super.toString();
   }
-
 }

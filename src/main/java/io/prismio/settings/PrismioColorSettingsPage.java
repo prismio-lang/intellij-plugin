@@ -5,77 +5,90 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.options.colors.AttributesDescriptor;
 import com.intellij.openapi.options.colors.ColorDescriptor;
 import com.intellij.openapi.options.colors.ColorSettingsPage;
-import io.prismio.highlighter.PsSyntaxHighlighter;
-import io.prismio.utils.Icons;
+import io.prismio.highlighter.PrismioSyntaxHighlighter;
+import io.prismio.icons.PrismioIcons;
+import java.util.Map;
+import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
-import java.util.Map;
 
 /**
  * Comprehensive color settings page for Prismio
  * Allows users to customize all syntax highlighting colors
  */
-public class PrismioColorSettingsPage implements ColorSettingsPage {
+public final class PrismioColorSettingsPage implements ColorSettingsPage {
+  private static final AttributesDescriptor[] DESCRIPTORS = new AttributesDescriptor[] {// Keywords
+      new AttributesDescriptor("Keywords//Keyword", PrismioSyntaxHighlighter.KEYWORD),
+      new AttributesDescriptor("Keywords//Type Keyword", PrismioSyntaxHighlighter.TYPE_KEYWORD),
 
-    private static final AttributesDescriptor[] DESCRIPTORS = new AttributesDescriptor[]{
-            // Keywords
-            new AttributesDescriptor("Keywords//Keyword", PsSyntaxHighlighter.KEYWORD),
-            new AttributesDescriptor("Keywords//Type Keyword", PsSyntaxHighlighter.TYPE_KEYWORD),
-            
-            // Literals
-            new AttributesDescriptor("Literals//String", PsSyntaxHighlighter.STRING),
-            new AttributesDescriptor("Literals//Number", PsSyntaxHighlighter.NUMBER),
-            new AttributesDescriptor("Literals//Boolean", PsSyntaxHighlighter.BOOLEAN),
-            new AttributesDescriptor("Literals//Character", PsSyntaxHighlighter.CHARACTER),
-            
-            // Identifiers
-            new AttributesDescriptor("Identifiers//Identifier", PsSyntaxHighlighter.IDENTIFIER),
-            new AttributesDescriptor("Identifiers//Function Declaration", PsSyntaxHighlighter.FUNCTION_DECLARATION),
-            new AttributesDescriptor("Identifiers//Function Call", PsSyntaxHighlighter.FUNCTION_CALL),
-            new AttributesDescriptor("Identifiers//Parameter", PsSyntaxHighlighter.PARAMETER),
-            new AttributesDescriptor("Identifiers//Struct Name", PsSyntaxHighlighter.STRUCT_NAME),
-            new AttributesDescriptor("Identifiers//Enum Name", PsSyntaxHighlighter.ENUM_NAME),
-            
-            // Operators and Separators
-            new AttributesDescriptor("Operators and Separators//Operator", PsSyntaxHighlighter.OPERATOR),
-            new AttributesDescriptor("Operators and Separators//Separator (Braces, Brackets)", PsSyntaxHighlighter.SEPARATOR),
-            new AttributesDescriptor("Operators and Separators//Comma", PsSyntaxHighlighter.COMMA),
-            new AttributesDescriptor("Operators and Separators//Semicolon", PsSyntaxHighlighter.SEMICOLON),
-            new AttributesDescriptor("Operators and Separators//Dot", PsSyntaxHighlighter.DOT),
-            
-            // Comments
-            new AttributesDescriptor("Comments//Line Comment", PsSyntaxHighlighter.LINE_COMMENT),
-            new AttributesDescriptor("Comments//Block Comment", PsSyntaxHighlighter.BLOCK_COMMENT),
-            
-            // Special
-            new AttributesDescriptor("Special//Bad Character", PsSyntaxHighlighter.BAD_CHARACTER)
-    };
+      // Literals
+      new AttributesDescriptor("Literals//String", PrismioSyntaxHighlighter.STRING),
+      new AttributesDescriptor("Literals//Number", PrismioSyntaxHighlighter.NUMBER),
+      new AttributesDescriptor("Literals//Boolean", PrismioSyntaxHighlighter.BOOLEAN),
+      new AttributesDescriptor("Literals//Character", PrismioSyntaxHighlighter.CHARACTER),
 
-    @Nullable
-    @Override
-    public Icon getIcon() {
-        return Icons.FILE;
-    }
+      // Identifiers
+      new AttributesDescriptor("Identifiers//Identifier", PrismioSyntaxHighlighter.IDENTIFIER),
+      new AttributesDescriptor(
+          "Identifiers//Function Declaration", PrismioSyntaxHighlighter.FUNCTION_DECLARATION),
+      new AttributesDescriptor(
+          "Identifiers//Function Call", PrismioSyntaxHighlighter.FUNCTION_CALL),
+      new AttributesDescriptor("Identifiers//Method Call", PrismioSyntaxHighlighter.METHOD_CALL),
+      new AttributesDescriptor("Identifiers//Parameter", PrismioSyntaxHighlighter.PARAMETER),
+      new AttributesDescriptor(
+          "Identifiers//Local Variable", PrismioSyntaxHighlighter.LOCAL_VARIABLE),
+      new AttributesDescriptor(
+          "Identifiers//Mutable Variable", PrismioSyntaxHighlighter.MUTABLE_VARIABLE),
+      new AttributesDescriptor("Identifiers//Constant", PrismioSyntaxHighlighter.CONSTANT),
+      new AttributesDescriptor("Identifiers//Field", PrismioSyntaxHighlighter.FIELD),
+      new AttributesDescriptor("Identifiers//Struct Name", PrismioSyntaxHighlighter.STRUCT_NAME),
+      new AttributesDescriptor("Identifiers//Enum Name", PrismioSyntaxHighlighter.ENUM_NAME),
+      new AttributesDescriptor("Identifiers//Trait Name", PrismioSyntaxHighlighter.TRAIT_NAME),
+      new AttributesDescriptor("Identifiers//Enum Variant", PrismioSyntaxHighlighter.ENUM_VARIANT),
+      new AttributesDescriptor(
+          "Identifiers//Type Reference", PrismioSyntaxHighlighter.TYPE_REFERENCE),
+      new AttributesDescriptor("Identifiers//Import Path", PrismioSyntaxHighlighter.IMPORT_PATH),
 
-    @NotNull
-    @Override
-    public SyntaxHighlighter getHighlighter() {
-        return new PsSyntaxHighlighter();
-    }
+      // Operators and Separators
+      new AttributesDescriptor(
+          "Operators and Separators//Operator", PrismioSyntaxHighlighter.OPERATOR),
+      new AttributesDescriptor("Operators and Separators//Separator (Braces, Brackets)",
+          PrismioSyntaxHighlighter.SEPARATOR),
+      new AttributesDescriptor("Operators and Separators//Comma", PrismioSyntaxHighlighter.COMMA),
+      new AttributesDescriptor(
+          "Operators and Separators//Semicolon", PrismioSyntaxHighlighter.SEMICOLON),
+      new AttributesDescriptor("Operators and Separators//Dot", PrismioSyntaxHighlighter.DOT),
 
-    @NotNull
-    @Override
-    public String getDemoText() {
-        return """
+      // Comments
+      new AttributesDescriptor("Comments//Line Comment", PrismioSyntaxHighlighter.LINE_COMMENT),
+      new AttributesDescriptor("Comments//Block Comment", PrismioSyntaxHighlighter.BLOCK_COMMENT),
+
+      // Special
+      new AttributesDescriptor("Special//Bad Character", PrismioSyntaxHighlighter.BAD_CHARACTER)};
+
+  @Nullable
+  @Override
+  public Icon getIcon() {
+    return PrismioIcons.FILE;
+  }
+
+  @NotNull
+  @Override
+  public SyntaxHighlighter getHighlighter() {
+    return new PrismioSyntaxHighlighter();
+  }
+
+  @NotNull
+  @Override
+  public String getDemoText() {
+    return """
             // Prismio Language Demo - Complete Syntax Showcase
             /* 
              * Multi-line comment demonstrating
              * comprehensive syntax highlighting
              */
             
-            import prismio.io
+            import <importPath>prismio.io</importPath>
             import prismio.collections
             
             // External function declarations
@@ -84,8 +97,8 @@ public class PrismioColorSettingsPage implements ColorSettingsPage {
             extern fn str_length(s: String) -> Int
             
             // Struct definition
-            struct Point {
-                x: Int,
+            struct <structName>Point</structName> {
+                <field>x</field>: Int,
                 y: Int
             }
             
@@ -96,8 +109,8 @@ public class PrismioColorSettingsPage implements ColorSettingsPage {
             }
             
             // Enum definition
-            enum Direction {
-                North,
+            enum <enumName>Direction</enumName> {
+                <enumVariant>North</enumVariant>,
                 South,
                 East,
                 West
@@ -109,7 +122,7 @@ public class PrismioColorSettingsPage implements ColorSettingsPage {
             }
             
             // Trait definition
-            trait Drawable {
+            trait <traitName>Drawable</traitName> {
                 fn draw()
             }
             
@@ -125,13 +138,13 @@ public class PrismioColorSettingsPage implements ColorSettingsPage {
             }
             
             // Global constants
-            let MAX_SIZE = 1000
+            let <constant>MAX_SIZE</constant> = 1000
             let PI = 3.14159
             let GREETING = "Hello, Prismio!"
             
             // Function with parameters and return type
-            fn calculate(a: Int, b: Int, op: Char) -> Int {
-                let mut result = 0
+            fn <functionDeclaration>calculate</functionDeclaration>(<parameter>a</parameter>: Int, b: Int, op: Char) -> Int {
+                let mut <mutableVariable>result</mutableVariable> = 0
                 
                 if (op == '+') {
                     result = a + b
@@ -179,7 +192,7 @@ public class PrismioColorSettingsPage implements ColorSettingsPage {
                 let numbers: [Int] = [1, 2, 3, 4, 5]
                 let matrix: [[Int]] = [[1, 2], [3, 4]]
                 
-                let first = numbers[0]
+                let <localVariable>first</localVariable> = numbers[0]
                 let value = matrix[0][1]
                 
                 println_int(first)
@@ -209,7 +222,7 @@ public class PrismioColorSettingsPage implements ColorSettingsPage {
                 let mut sum = 0
                 
                 // Function calls
-                let result = calculate(10, 5, '+')
+                let result = <functionCall>calculate</functionCall>(10, 5, '+')
                 let fib = fibonacci(10)
                 let total = sum_to_n(100)
                 
@@ -247,7 +260,7 @@ public class PrismioColorSettingsPage implements ColorSettingsPage {
                 
                 // Create struct instance
                 let point = Point { x: 10, y: 20 }
-                let distance = point.distance()
+                let distance = point.<methodCall>distance</methodCall>()
                 
                 // Enum usage
                 let dir = Direction::North
@@ -255,29 +268,43 @@ public class PrismioColorSettingsPage implements ColorSettingsPage {
                 println("Program completed successfully!")
             }
             """;
-    }
+  }
 
-    @Nullable
-    @Override
-    public Map<String, TextAttributesKey> getAdditionalHighlightingTagToDescriptorMap() {
-        return null;
-    }
+  @Nullable
+  @Override
+  public Map<String, TextAttributesKey> getAdditionalHighlightingTagToDescriptorMap() {
+    return Map.ofEntries(
+        Map.entry("functionDeclaration", PrismioSyntaxHighlighter.FUNCTION_DECLARATION),
+        Map.entry("functionCall", PrismioSyntaxHighlighter.FUNCTION_CALL),
+        Map.entry("methodCall", PrismioSyntaxHighlighter.METHOD_CALL),
+        Map.entry("parameter", PrismioSyntaxHighlighter.PARAMETER),
+        Map.entry("localVariable", PrismioSyntaxHighlighter.LOCAL_VARIABLE),
+        Map.entry("mutableVariable", PrismioSyntaxHighlighter.MUTABLE_VARIABLE),
+        Map.entry("constant", PrismioSyntaxHighlighter.CONSTANT),
+        Map.entry("field", PrismioSyntaxHighlighter.FIELD),
+        Map.entry("structName", PrismioSyntaxHighlighter.STRUCT_NAME),
+        Map.entry("enumName", PrismioSyntaxHighlighter.ENUM_NAME),
+        Map.entry("traitName", PrismioSyntaxHighlighter.TRAIT_NAME),
+        Map.entry("enumVariant", PrismioSyntaxHighlighter.ENUM_VARIANT),
+        Map.entry("typeReference", PrismioSyntaxHighlighter.TYPE_REFERENCE),
+        Map.entry("importPath", PrismioSyntaxHighlighter.IMPORT_PATH));
+  }
 
-    @NotNull
-    @Override
-    public AttributesDescriptor[] getAttributeDescriptors() {
-        return DESCRIPTORS;
-    }
+  @NotNull
+  @Override
+  public AttributesDescriptor[] getAttributeDescriptors() {
+    return DESCRIPTORS;
+  }
 
-    @NotNull
-    @Override
-    public ColorDescriptor[] getColorDescriptors() {
-        return ColorDescriptor.EMPTY_ARRAY;
-    }
+  @NotNull
+  @Override
+  public ColorDescriptor[] getColorDescriptors() {
+    return ColorDescriptor.EMPTY_ARRAY;
+  }
 
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Prismio";
-    }
+  @NotNull
+  @Override
+  public String getDisplayName() {
+    return "Prismio";
+  }
 }

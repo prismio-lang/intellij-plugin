@@ -2,12 +2,12 @@
 <list>
     <option name="PRISMIO_FUNCTION_CALL">
         <value>
-            <option name="FOREGROUND" value="675A00"/>
+            <option name="FOREGROUND" value="C6B86A"/>
         </value>
     </option>
     <option name="PRISMIO_METHOD_CALL">
         <value>
-            <option name="FOREGROUND" value="675A00"/>
+            <option name="FOREGROUND" value="C6B86A"/>
         </value>
     </option>
 </list>

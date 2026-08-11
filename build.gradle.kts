@@ -1,13 +1,19 @@
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+
 plugins {
   id("java")
-  id("org.jetbrains.intellij.platform") version "2.1.0"
+  id("org.jetbrains.intellij.platform") version "2.18.1"
 }
+
+group = "io.prismio"
+version = "1.0.0"
 
 repositories {
   mavenCentral()
 
   intellijPlatform {
     defaultRepositories()
+    intellijDependencies()
   }
 }
 
@@ -21,42 +27,40 @@ sourceSets {
 
 dependencies {
   intellijPlatform {
-    // Targets IntelliJ IDEA Community — the plugin uses only platform-level APIs
-    // so it runs on both IntelliJ IDEA and CLion (and all JetBrains IDEs).
-    intellijIdeaCommunity("2024.2.4")
+    // The unified IntelliJ IDEA distribution is the current platform artifact.
+    // The plugin uses the shared platform plus its extracted spellchecker module.
+    intellijIdea("2026.2.1")
+    bundledModule("intellij.spellchecker")
+    bundledModule("intellij.platform.debugger")
+    testFramework(TestFrameworkType.Platform)
 
     pluginVerifier()
     zipSigner()
-    instrumentationTools()
   }
   testImplementation("junit:junit:4.13.2")
 }
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(21))
+    languageVersion = JavaLanguageVersion.of(26)
   }
+  sourceCompatibility = JavaVersion.VERSION_25
+  targetCompatibility = JavaVersion.VERSION_25
+}
+
+tasks.withType<JavaCompile>().configureEach {
+  // Build with the current JDK while emitting bytecode loadable by the
+  // Java 25 runtime bundled with IntelliJ Platform 2026.2.
+  options.release = 25
 }
 
 // See https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellijPlatform {
-  group = "io.prismio"
   buildSearchableOptions = true
   projectName = project.name
 
   pluginConfiguration {
-    version = "1.0.0"
-    ideaVersion {
-      sinceBuild = "242"
-      untilBuild = "253.*"
-    }
+    // The minimum build defaults to the selected platform. No until-build is
+    // declared so compatible future IDE updates are not needlessly blocked.
   }
 }
-
-//tasks {
-//  patchPluginXml {
-//    version.set("${project.version}")
-//    sinceBuild.set("233")
-//    untilBuild.set("242.*")
-//  }
-//}

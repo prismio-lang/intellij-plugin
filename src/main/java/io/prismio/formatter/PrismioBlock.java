@@ -1,6 +1,13 @@
 package io.prismio.formatter;
 
-import com.intellij.formatting.*;
+import com.intellij.formatting.Alignment;
+import com.intellij.formatting.Block;
+import com.intellij.formatting.ChildAttributes;
+import com.intellij.formatting.Indent;
+import com.intellij.formatting.Spacing;
+import com.intellij.formatting.SpacingBuilder;
+import com.intellij.formatting.Wrap;
+import com.intellij.formatting.WrapType;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
@@ -8,34 +15,27 @@ import com.intellij.psi.formatter.common.AbstractBlock;
 import com.intellij.psi.tree.IElementType;
 import io.prismio.PrismioLanguage;
 import io.prismio.psi.PrismioTypes;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Enhanced code formatter for Prismio with comprehensive spacing rules.
  * Uses brace counting for indentation since PSI tree is flat (no block nodes).
  */
-public class PrismioBlock extends AbstractBlock {
-
+final class PrismioBlock extends AbstractBlock {
   private final CodeStyleSettings settings;
   private final SpacingBuilder spacingBuilder;
   private final int indentLevel;
 
-  public PrismioBlock(@NotNull ASTNode node,
-      @Nullable Wrap wrap,
-      @Nullable Alignment alignment,
+  public PrismioBlock(@NotNull ASTNode node, @Nullable Wrap wrap, @Nullable Alignment alignment,
       CodeStyleSettings settings) {
     this(node, wrap, alignment, settings, 0);
   }
 
-  public PrismioBlock(@NotNull ASTNode node,
-      @Nullable Wrap wrap,
-      @Nullable Alignment alignment,
-      CodeStyleSettings settings,
-      int indentLevel) {
+  public PrismioBlock(@NotNull ASTNode node, @Nullable Wrap wrap, @Nullable Alignment alignment,
+      CodeStyleSettings settings, int indentLevel) {
     super(node, wrap, alignment);
     this.settings = settings;
     this.spacingBuilder = createSpacingBuilder(settings);
@@ -45,44 +45,67 @@ public class PrismioBlock extends AbstractBlock {
   private static SpacingBuilder createSpacingBuilder(CodeStyleSettings settings) {
     return new SpacingBuilder(settings, PrismioLanguage.INSTANCE)
         // Arrow operators - space on both sides for return type arrows
-        .around(PrismioTypes.ARROW).spaces(1)
-        .around(PrismioTypes.FAT_ARROW).spaces(1)
+        .around(PrismioTypes.ARROW)
+        .spaces(1)
+        .around(PrismioTypes.FAT_ARROW)
+        .spaces(1)
 
         // Around all operators - space on both sides
-        .around(PrismioTypes.ARITHMETIC_OP).spaces(1)
-        .around(PrismioTypes.RELATIONAL_OP).spaces(1)
-        .around(PrismioTypes.ASSIGNMENT_OP).spaces(1)
-        .around(PrismioTypes.LOGICAL_OP).spaces(1)
-        .around(PrismioTypes.COMPARISON).spaces(1)
-        .around(PrismioTypes.OPERATOR).spaces(1)
-        .around(PrismioTypes.BITWISE).spaces(1)
+        .around(PrismioTypes.ARITHMETIC_OP)
+        .spaces(1)
+        .around(PrismioTypes.RELATIONAL_OP)
+        .spaces(1)
+        .around(PrismioTypes.ASSIGNMENT_OP)
+        .spaces(1)
+        .around(PrismioTypes.LOGICAL_OP)
+        .spaces(1)
+        .around(PrismioTypes.COMPARISON)
+        .spaces(1)
+        .around(PrismioTypes.OPERATOR)
+        .spaces(1)
+        .around(PrismioTypes.BITWISE)
+        .spaces(1)
 
         // After keywords - single space
-        .after(PrismioTypes.KEYWORD).spaces(1)
+        .after(PrismioTypes.KEYWORD)
+        .spaces(1)
         // Space before type keywords
-        .before(PrismioTypes.TYPE_KEYWORD).spaces(1)
+        .before(PrismioTypes.TYPE_KEYWORD)
+        .spaces(1)
 
         // Identifiers - no extra space after by default
-        .after(PrismioTypes.IDENTIFIER).spaces(0)
+        .after(PrismioTypes.IDENTIFIER)
+        .spaces(0)
 
         // Specific separators
-        .before(PrismioTypes.COMMA).spaces(0)
-        .after(PrismioTypes.COMMA).spaces(1)
-        .before(PrismioTypes.COLON).spaces(0)
-        .after(PrismioTypes.COLON).spaces(1)
-        .around(PrismioTypes.DOT).spaces(0)
+        .before(PrismioTypes.COMMA)
+        .spaces(0)
+        .after(PrismioTypes.COMMA)
+        .spaces(1)
+        .before(PrismioTypes.COLON)
+        .spaces(0)
+        .after(PrismioTypes.COLON)
+        .spaces(1)
+        .around(PrismioTypes.DOT)
+        .spaces(0)
 
         // Braces - space before opening brace
-        .before(PrismioTypes.LBRACE).spaces(1)
+        .before(PrismioTypes.LBRACE)
+        .spaces(1)
 
         // Parentheses - no internal spacing
-        .after(PrismioTypes.LPAREN).spaces(0)
-        .before(PrismioTypes.RPAREN).spaces(0)
-        .before(PrismioTypes.LPAREN).spaces(0)
+        .after(PrismioTypes.LPAREN)
+        .spaces(0)
+        .before(PrismioTypes.RPAREN)
+        .spaces(0)
+        .before(PrismioTypes.LPAREN)
+        .spaces(0)
 
         // Brackets - no internal spacing
-        .after(PrismioTypes.LBRACKET).spaces(0)
-        .before(PrismioTypes.RBRACKET).spaces(0);
+        .after(PrismioTypes.LBRACKET)
+        .spaces(0)
+        .before(PrismioTypes.RBRACKET)
+        .spaces(0);
   }
 
   @Override
@@ -92,9 +115,7 @@ public class PrismioBlock extends AbstractBlock {
     int currentIndent = 0;
 
     while (child != null) {
-      if (child.getElementType() != TokenType.WHITE_SPACE &&
-          child.getTextLength() > 0) {
-
+      if (child.getElementType() != TokenType.WHITE_SPACE && child.getTextLength() > 0) {
         IElementType type = child.getElementType();
 
         // Decrease indent BEFORE adding RBRACE
@@ -103,11 +124,7 @@ public class PrismioBlock extends AbstractBlock {
         }
 
         Block block = new PrismioBlock(
-            child,
-            Wrap.createWrap(WrapType.NONE, false),
-            null,
-            settings,
-            currentIndent);
+            child, Wrap.createWrap(WrapType.NONE, false), null, settings, currentIndent);
         blocks.add(block);
 
         // Increase indent AFTER adding LBRACE

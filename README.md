@@ -9,8 +9,8 @@
 [![JetBrains Plugin](https://img.shields.io/badge/JetBrains-Plugin-orange?logo=jetbrains&logoColor=white)](https://plugins.jetbrains.com/)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com/Vibrant275/PrismioPlugin/releases)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
-[![IntelliJ](https://img.shields.io/badge/IntelliJ%20IDEA-2024.2%2B-blueviolet?logo=intellij-idea)](https://www.jetbrains.com/idea/)
-[![Build](https://img.shields.io/badge/build-Gradle%208-red?logo=gradle)](build.gradle.kts)
+[![IntelliJ](https://img.shields.io/badge/IntelliJ%20IDEA-2026.2%2B-blueviolet?logo=intellij-idea)](https://www.jetbrains.com/idea/)
+[![Build](https://img.shields.io/badge/build-Gradle%209.6.1-red?logo=gradle)](build.gradle.kts)
 
 </div>
 
@@ -18,9 +18,9 @@
 
 ## Overview
 
-This repository provides **full language support** for the [Prismio programming language](https://github.com/prismio-lang/prismio) inside all JetBrains IDEs — including IntelliJ IDEA, CLion, GoLand, PyCharm, WebStorm, and more.
+This repository provides JetBrains IDE support for the [Prismio programming language](https://github.com/prismio-lang/prismio), including IntelliJ IDEA, CLion, GoLand, PyCharm, and WebStorm.
 
-Prismio (`.psm` files) is a compiled, statically-typed systems language. This plugin bridges the Prismio compiler ecosystem with the JetBrains Platform, delivering a developer experience on par with first-class supported languages.
+Prismio (`.psm` files) is a compiled, statically typed systems language. The plugin currently provides the editor, navigation, and presentation layer for `.psm` files. Compiler-backed parsing, diagnostics, resolution, and execution integration remain separate post-v1 milestones.
 
 ---
 
@@ -28,17 +28,19 @@ Prismio (`.psm` files) is a compiled, statically-typed systems language. This pl
 
 | Feature | Details |
 |---|---|
-| 🎨 **Syntax Highlighting** | Lexer-based token coloring + semantic annotations for functions, structs, enums, and parameters |
+| 🎨 **Syntax Highlighting** | Theme-aware token and semantic colors for declarations, calls, types, imports, fields, variables, constants, and enum variants |
 | 🧠 **Code Completion** | Keyword, built-in type, and snippet suggestions with ranked ordering |
-| 🗂️ **Structure View** | Instant navigation panel showing all top-level declarations |
+| 🗂️ **Structure View** | Instant navigation panel showing declarations and methods |
+| 📦 **Code Folding** | Collapse multiline function bodies from the editor gutter |
+| 🔴 **Line Breakpoints** | Add persistent breakpoint markers on meaningful `.psm` lines |
 | 🔍 **Go to Symbol** | Jump to any symbol across the project with `Ctrl+Alt+Shift+N` |
-| 📖 **Quick Documentation** | Hover docs for Prismio elements with `Ctrl+Q` |
+| 📖 **Documentation** | Declaration summaries with `Ctrl+Q` and rendered `/** */` comments with `Ctrl+Alt+Q` |
 | ✏️ **Code Formatting** | Auto-format on save/reformat with fully configurable code style settings |
 | 🔧 **Live Templates** | 15+ ready-to-use snippets: `fn`, `struct`, `enum`, `impl`, `if`, `while`, `for`, `match`, `let`, and more |
-| 🔗 **Brace & Quote Matching** | Auto-close `()`, `[]`, `{}`, `""`, `''` |
-| ↩️ **Smart Indentation** | Brace-aware `Enter` to auto-indent inside blocks |
+| 🔗 **Delimiter Matching** | Auto-close `()`, `[]`, `{}`, `""`, `''`, and block comments (`/* */`) |
+| ↩️ **Smart Indentation** | Brace-aware blocks and consistent three-space block-comment continuation |
 | 💬 **Comment Toggling** | Line (`//`) and block (`/* */`) comment support via `Ctrl+/` and `Ctrl+Shift+/` |
-| ✅ **Find Usages & Rename** | Basic find-usages and inline rename refactoring |
+| ✅ **Find Usages** | Identifier-aware usage search and element descriptions |
 | 🎨 **Color Settings Page** | Fully configurable token colors in **Settings → Editor → Color Scheme → Prismio** |
 | 🔤 **Spellchecking** | Integrated spell-checker for strings and comments |
 | 📄 **New File Action** | Create `.psm` files from the **New** menu with a Prismio icon |
@@ -61,9 +63,9 @@ Prismio (`.psm` files) is a compiled, statically-typed systems language. This pl
 
 | Requirement | Version |
 |---|---|
-| JDK | 21+ |
-| Gradle | 8.x (wrapper included) |
-| IntelliJ IDEA | 2024.2+ (Community or Ultimate) |
+| JDK | 26 |
+| Gradle | 9.6.1 (wrapper included) |
+| IntelliJ IDEA | 2026.2+ |
 
 ### Steps
 
@@ -86,31 +88,40 @@ The distributable plugin zip will be placed in `build/distributions/`.
 ## 🗂️ Project Structure
 
 ```
-prismio-intellij/
+intellij-plugin/
 ├── src/
-│   └── main/
-│       ├── java/io/prismio/
-│       │   ├── annotator/          # Semantic highlighting (functions, structs, enums)
-│       │   ├── completion/         # Code completion contributor
-│       │   ├── formatter/          # Code formatting rules
-│       │   ├── handler/            # Typed & enter key handlers
-│       │   ├── highlighter/        # Lexer-based syntax highlighting
-│       │   ├── lexer/              # JFlex lexer generated output
-│       │   ├── psi/                # PSI tree elements
-│       │   ├── settings/           # Color settings page
-│       │   ├── template/           # File templates & live templates
-│       │   ├── utils/              # Shared utilities
-│       │   ├── Prismio.bnf         # Grammar definition (GrammarKit BNF)
-│       │   ├── Prismio.flex        # JFlex lexer specification
-│       │   └── ...                 # Core language registrations
-│       └── resources/
-│           ├── META-INF/
-│           │   ├── plugin.xml      # Plugin descriptor & extension points
-│           │   └── pluginIcon.svg  # Plugin marketplace icon
-│           ├── colorSchemes/       # Default & Darcula color attributes
-│           ├── fileTemplates/      # .psm file template
-│           ├── icons/              # File type icons
-│           └── liveTemplates/      # Live template definitions
+│   ├── main/
+│   │   ├── gen/io/prismio/       # Generated lexer, parser, and token types
+│   │   ├── java/io/prismio/
+│   │   │   ├── annotator/          # Semantic highlighting (functions, structs, enums)
+│   │   │   ├── completion/         # Code completion contributor
+│   │   │   ├── debugger/           # Gutter line breakpoint support
+│   │   │   ├── documentation/      # Quick documentation provider
+│   │   │   ├── editor/             # Comments, braces, and quote handling
+│   │   │   ├── folding/            # Function body folding regions
+│   │   │   ├── formatter/          # Code formatting rules
+│   │   │   ├── handler/            # Typed & enter key handlers
+│   │   │   ├── highlighter/        # Lexer-based syntax highlighting
+│   │   │   ├── icons/              # Shared plugin icon registry
+│   │   │   ├── lexer/              # IntelliJ lexer adapter
+│   │   │   ├── navigation/         # Structure view, symbols, and usages
+│   │   │   ├── parser/             # Parser definition
+│   │   │   ├── psi/                # File and token PSI support
+│   │   │   ├── settings/           # Color and code-style settings
+│   │   │   ├── spellcheck/         # Comment and string spellchecking
+│   │   │   ├── template/           # New Prismio File action
+│   │   │   ├── Prismio.bnf         # Grammar definition (GrammarKit BNF)
+│   │   │   ├── Prismio.flex        # JFlex lexer specification
+│   │   │   └── ...                 # Core language registrations
+│   │   └── resources/
+│   │       ├── META-INF/
+│   │       │   ├── plugin.xml      # Plugin descriptor & extension points
+│   │       │   └── pluginIcon.svg  # Plugin marketplace icon
+│   │       ├── colorSchemes/       # Light and dark semantic call colors
+│   │       ├── fileTemplates/      # .psm file template
+│   │       ├── icons/              # File type icons
+│   │       └── liveTemplates/      # Live template definitions
+│   └── test/                       # Platform fixture tests
 ├── build.gradle.kts                # Gradle build configuration
 └── gradle.properties               # Build cache & Kotlin stdlib settings
 ```
@@ -121,10 +132,9 @@ prismio-intellij/
 
 | IDE | Since Build | Until Build |
 |---|---|---|
-| IntelliJ IDEA Community | 2024.2 (`242`) | 2025.3.* (`253.*`) |
-| IntelliJ IDEA Ultimate | 2024.2 | 2025.3.* |
-| CLion | 2024.2 | 2025.3.* |
-| All other JetBrains IDEs | 2024.2 | 2025.3.* |
+| IntelliJ IDEA | 2026.2 (`262`) | Open-ended |
+| CLion | 2026.2 | Open-ended |
+| All other JetBrains IDEs with the spellchecker module | 2026.2 | Open-ended |
 
 > The plugin depends only on `com.intellij.modules.platform`, making it universal across all JetBrains products.
 

@@ -1,13 +1,13 @@
 package io.prismio;
 
 import com.intellij.psi.tree.IElementType;
-import psi.io.prismio.PrismioTypes;
+import io.prismio.psi.PrismioTypes;
 import com.intellij.psi.TokenType;
 
 %%
 
 %public
-%class PsLexer
+%class PrismioLexer
 %implements FlexLexer
 %unicode
 %function advance

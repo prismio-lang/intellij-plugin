@@ -39,9 +39,9 @@ By participating in this project you agree to abide by our [Code of Conduct](COD
 
 | Tool | Minimum Version | Notes |
 |------|----------------|-------|
-| JDK | 21 | `JAVA_HOME` must be set |
-| IntelliJ IDEA | 2024.2 (Community or Ultimate) | For the Grammar-Kit & JFlex plugins |
-| Gradle | 8.x | Wrapper (`./gradlew`) is included — no separate install needed |
+| JDK | 26 | `JAVA_HOME` must be set |
+| IntelliJ IDEA | 2026.2.1 | For the Grammar-Kit & JFlex plugins |
+| Gradle | 9.6.1 | Wrapper (`./gradlew`) is included — no separate install needed |
 | Git | Any recent version | |
 
 **Recommended IntelliJ Plugins (for development):**
@@ -82,7 +82,7 @@ Before filing a new bug report:
 When opening an issue, please include:
 
 - Plugin version (from **Settings → Plugins**)
-- IDE name and version (e.g., IntelliJ IDEA 2024.2.4)
+- IDE name and version (e.g., IntelliJ IDEA 2026.2.1)
 - Operating system and architecture
 - A **minimal** `.psm` file or code snippet that triggers the bug
 - The exact error message or unexpected behavior you observe
@@ -139,17 +139,25 @@ For large changes (new subsystems, significant refactors), please **open a discu
 ```
 src/
 └── main/
+    ├── gen/io/prismio/       # Generated lexer, parser, and token types
     ├── java/io/prismio/
     │   ├── annotator/          # Semantic annotations (PrismioAnnotator.java)
     │   ├── completion/         # CompletionContributor
+    │   ├── debugger/           # Gutter line-breakpoint support
+    │   ├── documentation/      # Quick documentation provider
+    │   ├── editor/             # Commenter, brace matcher, quote handler
+    │   ├── folding/            # Function-body folding
     │   ├── formatter/          # FormattingModelBuilder helpers
     │   ├── handler/            # TypedHandler, EnterHandler
     │   ├── highlighter/        # SyntaxHighlighter, SyntaxHighlighterFactory
-    │   ├── lexer/              # Generated JFlex lexer output
-    │   ├── psi/                # Generated PSI interfaces and implementations
-    │   ├── settings/           # ColorSettingsPage
-    │   ├── template/           # File & live template descriptors
-    │   ├── utils/              # Shared PSI utilities
+    │   ├── icons/              # Shared plugin icon registry
+    │   ├── lexer/              # IntelliJ lexer adapter
+    │   ├── navigation/         # Structure view, symbols, and usages
+    │   ├── parser/             # ParserDefinition
+    │   ├── psi/                # File and token PSI support
+    │   ├── settings/           # Color and code-style settings
+    │   ├── spellcheck/         # Comment and string spellchecking
+    │   ├── template/           # New Prismio File action
     │   ├── Prismio.bnf         # ← Grammar-Kit BNF grammar
     │   └── Prismio.flex        # ← JFlex lexer spec
     └── resources/
@@ -213,7 +221,7 @@ To regenerate the lexer after editing:
 
 ## Coding Standards
 
-- **Java 21** source compatibility (no preview features).
+- **Java 25** source compatibility, compiled with JDK 26 (no preview features).
 - Follow the [IntelliJ Platform Coding Guidelines](https://plugins.jetbrains.com/docs/intellij/intellij-coding-guidelines.html).
 - Keep classes focused and single-responsibility.
 - All public methods and classes must have Javadoc comments.

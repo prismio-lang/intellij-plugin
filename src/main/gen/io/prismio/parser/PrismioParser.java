@@ -1,218 +1,121 @@
 // This is a generated file. Not intended for manual editing.
 package io.prismio.parser;
 
+import com.intellij.lang.ASTNode;
+import com.intellij.lang.LightPsiParser;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.PsiBuilder.Marker;
-import static io.prismio.psi.PrismioTypes.*;
-import static com.intellij.lang.parser.GeneratedParserUtilBase.*;
-import static io.prismio.psi.PrismioTypes.BLOCK;
+import com.intellij.lang.PsiParser;
+import com.intellij.psi.tree.IElementType;
+
+import static com.intellij.lang.parser.GeneratedParserUtilBase.TRUE_CONDITION;
+import static com.intellij.lang.parser.GeneratedParserUtilBase._COLLAPSE_;
+import static com.intellij.lang.parser.GeneratedParserUtilBase.adapt_builder_;
+import static com.intellij.lang.parser.GeneratedParserUtilBase.consumeToken;
+import static com.intellij.lang.parser.GeneratedParserUtilBase.current_position_;
+import static com.intellij.lang.parser.GeneratedParserUtilBase.empty_element_parsed_guard_;
+import static com.intellij.lang.parser.GeneratedParserUtilBase.enter_section_;
+import static com.intellij.lang.parser.GeneratedParserUtilBase.exit_section_;
+import static com.intellij.lang.parser.GeneratedParserUtilBase.recursion_guard_;
+import static io.prismio.psi.PrismioTypes.ARITHMETIC_OP;
+import static io.prismio.psi.PrismioTypes.ARROW;
+import static io.prismio.psi.PrismioTypes.ASSIGNMENT_OP;
+import static io.prismio.psi.PrismioTypes.BITWISE;
 import static io.prismio.psi.PrismioTypes.BOOLEAN;
 import static io.prismio.psi.PrismioTypes.CHARACTER_LITERAL;
+import static io.prismio.psi.PrismioTypes.COLON;
+import static io.prismio.psi.PrismioTypes.COMMA;
+import static io.prismio.psi.PrismioTypes.COMPARISON;
+import static io.prismio.psi.PrismioTypes.DOT;
+import static io.prismio.psi.PrismioTypes.FAT_ARROW;
 import static io.prismio.psi.PrismioTypes.FLOAT;
-import static io.prismio.psi.PrismioTypes.FN;
-import static io.prismio.psi.PrismioTypes.FUNCTION_DECL;
 import static io.prismio.psi.PrismioTypes.IDENTIFIER;
 import static io.prismio.psi.PrismioTypes.INTEGER;
 import static io.prismio.psi.PrismioTypes.KEYWORD;
 import static io.prismio.psi.PrismioTypes.LBRACE;
+import static io.prismio.psi.PrismioTypes.LBRACKET;
+import static io.prismio.psi.PrismioTypes.LOGICAL_OP;
+import static io.prismio.psi.PrismioTypes.LPAREN;
 import static io.prismio.psi.PrismioTypes.MULTILINE_COMMENT;
-import static io.prismio.psi.PrismioTypes.PARAMETER_LIST;
 import static io.prismio.psi.PrismioTypes.RBRACE;
+import static io.prismio.psi.PrismioTypes.RBRACKET;
+import static io.prismio.psi.PrismioTypes.RELATIONAL_OP;
+import static io.prismio.psi.PrismioTypes.RPAREN;
+import static io.prismio.psi.PrismioTypes.SEMICOLON;
 import static io.prismio.psi.PrismioTypes.SINGLE_LINE_COMMENT;
-import static io.prismio.psi.PrismioTypes.STATEMENT;
 import static io.prismio.psi.PrismioTypes.STRING_LITERAL;
 import static io.prismio.psi.PrismioTypes.TYPE_KEYWORD;
+import static io.prismio.psi.PrismioTypes.UNARY_OP;
 
-import com.intellij.psi.tree.IElementType;
-import com.intellij.lang.ASTNode;
-import com.intellij.lang.PsiParser;
-import com.intellij.lang.LightPsiParser;
+@SuppressWarnings({"SimplifiableIfStatement", "UnusedAssignment"})
+public final class PrismioParser implements PsiParser, LightPsiParser {
 
-@SuppressWarnings({ "SimplifiableIfStatement", "UnusedAssignment" })
-public class PrismioParser implements PsiParser, LightPsiParser {
-
-  public ASTNode parse(IElementType t, PsiBuilder b) {
-    parseLight(t, b);
-    return b.getTreeBuilt();
+  @Override
+  public ASTNode parse(IElementType root, PsiBuilder builder) {
+    parseLight(root, builder);
+    return builder.getTreeBuilt();
   }
 
-  public void parseLight(IElementType t, PsiBuilder b) {
-    boolean r;
-    b = adapt_builder_(t, b, this, null);
-    Marker m = enter_section_(b, 0, _COLLAPSE_, null);
-    r = parse_root_(t, b);
-    exit_section_(b, 0, m, t, r, true, TRUE_CONDITION);
+  @Override
+  public void parseLight(IElementType root, PsiBuilder builder) {
+    builder = adapt_builder_(root, builder, this, null);
+    Marker marker = enter_section_(builder, 0, _COLLAPSE_, null);
+    boolean result = parseRoot(builder, 1);
+    exit_section_(builder, 0, marker, root, result, true, TRUE_CONDITION);
   }
 
-  protected boolean parse_root_(IElementType t, PsiBuilder b) {
-    return parse_root_(t, b, 0);
-  }
-
-  static boolean parse_root_(IElementType t, PsiBuilder b, int l) {
-    return prismioFile(b, l + 1);
-  }
-
-  /* ********************************************************** */
-  // "{"
-  public static boolean LBRACE(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "LBRACE"))
+  private static boolean parseRoot(PsiBuilder builder, int level) {
+    if (!recursion_guard_(builder, level, "prismioFile")) {
       return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NONE_, LBRACE, "<lbrace>");
-    r = consumeToken(b, "{");
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // "}"
-  public static boolean RBRACE(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "RBRACE"))
-      return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NONE_, RBRACE, "<rbrace>");
-    r = consumeToken(b, "}");
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // LBRACE statement* RBRACE
-  public static boolean block(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "block"))
-      return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NONE_, BLOCK, "<block>");
-    r = LBRACE(b, l + 1);
-    r = r && block_1(b, l + 1);
-    r = r && RBRACE(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // statement*
-  private static boolean block_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "block_1"))
-      return false;
+    }
     while (true) {
-      int c = current_position_(b);
-      if (!consumeToken(b, STATEMENT))
+      int position = current_position_(builder);
+      if (!parseItem(builder, level + 1)) {
         break;
-      if (!empty_element_parsed_guard_(b, "block_1", c))
+      }
+      if (!empty_element_parsed_guard_(builder, "prismioFile", position)) {
         break;
+      }
     }
     return true;
   }
 
-  /* ********************************************************** */
-  // FN IDENTIFIER parameter_list block
-  public static boolean function_decl(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "function_decl"))
+  private static boolean parseItem(PsiBuilder builder, int level) {
+    if (!recursion_guard_(builder, level, "item")) {
       return false;
-    if (!nextTokenIs(b, FN))
-      return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, FN, IDENTIFIER, PARAMETER_LIST);
-    r = r && block(b, l + 1);
-    exit_section_(b, m, FUNCTION_DECL, r);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // KEYWORD
-  // | TYPE_KEYWORD
-  // | IDENTIFIER
-  // | STRING_LITERAL
-  // | CHARACTER_LITERAL
-  // | BOOLEAN
-  // | INTEGER
-  // | FLOAT
-  // | MULTILINE_COMMENT
-  // | SINGLE_LINE_COMMENT
-  // | LPAREN | RPAREN | LBRACE | RBRACE | LBRACKET | RBRACKET
-  // | COMMA | COLON | DOT | SEMICOLON
-  // | ARROW | FAT_ARROW
-  // | RELATIONAL_OP | ASSIGNMENT_OP | UNARY_OP | LOGICAL_OP
-  // | ARITHMETIC_OP | COMPARISON | BITWISE
-  static boolean item_(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "item_"))
-      return false;
-    boolean r;
-    r = consumeToken(b, KEYWORD);
-    if (!r)
-      r = consumeToken(b, TYPE_KEYWORD);
-    if (!r)
-      r = consumeToken(b, IDENTIFIER);
-    if (!r)
-      r = consumeToken(b, STRING_LITERAL);
-    if (!r)
-      r = consumeToken(b, CHARACTER_LITERAL);
-    if (!r)
-      r = consumeToken(b, BOOLEAN);
-    if (!r)
-      r = consumeToken(b, MULTILINE_COMMENT);
-    if (!r)
-      r = consumeToken(b, SINGLE_LINE_COMMENT);
-    if (!r)
-      r = consumeToken(b, INTEGER);
-    if (!r)
-      r = consumeToken(b, FLOAT);
-    // Separators (specific)
-    if (!r)
-      r = consumeToken(b, LPAREN);
-    if (!r)
-      r = consumeToken(b, RPAREN);
-    if (!r)
-      r = consumeToken(b, LBRACE);
-    if (!r)
-      r = consumeToken(b, RBRACE);
-    if (!r)
-      r = consumeToken(b, LBRACKET);
-    if (!r)
-      r = consumeToken(b, RBRACKET);
-    if (!r)
-      r = consumeToken(b, COMMA);
-    if (!r)
-      r = consumeToken(b, COLON);
-    if (!r)
-      r = consumeToken(b, DOT);
-    if (!r)
-      r = consumeToken(b, SEMICOLON);
-    // Operators (specific)
-    if (!r)
-      r = consumeToken(b, ARROW);
-    if (!r)
-      r = consumeToken(b, FAT_ARROW);
-    if (!r)
-      r = consumeToken(b, RELATIONAL_OP);
-    if (!r)
-      r = consumeToken(b, ASSIGNMENT_OP);
-    if (!r)
-      r = consumeToken(b, UNARY_OP);
-    if (!r)
-      r = consumeToken(b, LOGICAL_OP);
-    if (!r)
-      r = consumeToken(b, ARITHMETIC_OP);
-    if (!r)
-      r = consumeToken(b, COMPARISON);
-    if (!r)
-      r = consumeToken(b, BITWISE);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // item_*
-  static boolean prismioFile(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "prismioFile"))
-      return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!item_(b, l + 1))
-        break;
-      if (!empty_element_parsed_guard_(b, "prismioFile", c))
-        break;
     }
-    return true;
+    IElementType tokenType = builder.getTokenType();
+    if (tokenType == KEYWORD
+        || tokenType == TYPE_KEYWORD
+        || tokenType == IDENTIFIER
+        || tokenType == STRING_LITERAL
+        || tokenType == CHARACTER_LITERAL
+        || tokenType == BOOLEAN
+        || tokenType == INTEGER
+        || tokenType == FLOAT
+        || tokenType == MULTILINE_COMMENT
+        || tokenType == SINGLE_LINE_COMMENT
+        || tokenType == LPAREN
+        || tokenType == RPAREN
+        || tokenType == LBRACE
+        || tokenType == RBRACE
+        || tokenType == LBRACKET
+        || tokenType == RBRACKET
+        || tokenType == COMMA
+        || tokenType == COLON
+        || tokenType == DOT
+        || tokenType == SEMICOLON
+        || tokenType == ARROW
+        || tokenType == FAT_ARROW
+        || tokenType == RELATIONAL_OP
+        || tokenType == ASSIGNMENT_OP
+        || tokenType == UNARY_OP
+        || tokenType == LOGICAL_OP
+        || tokenType == ARITHMETIC_OP
+        || tokenType == COMPARISON
+        || tokenType == BITWISE) {
+      return consumeToken(builder, tokenType);
+    }
+    return false;
   }
 }
