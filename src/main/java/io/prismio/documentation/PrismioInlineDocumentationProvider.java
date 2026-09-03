@@ -8,7 +8,7 @@ import com.intellij.platform.backend.documentation.InlineDocumentationProvider;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.xml.util.XmlStringUtil;
-import io.prismio.lexer.PrismioLexerAdapter;
+import io.prismio.lexer.PrismioLexer;
 import io.prismio.navigation.Declaration;
 import io.prismio.navigation.DeclarationScanner;
 import io.prismio.psi.PrismioFile;
@@ -30,11 +30,13 @@ public final class PrismioInlineDocumentationProvider implements InlineDocumenta
     List<Declaration> declarations = DeclarationScanner.collect(file);
     List<InlineDocumentation> documentation = new ArrayList<>();
     CharSequence source = file.getViewProvider().getContents();
-    Lexer lexer = new PrismioLexerAdapter();
+    Lexer lexer = new PrismioLexer();
     lexer.start(source);
 
     while (lexer.getTokenType() != null) {
-      if (lexer.getTokenType() == PrismioTypes.MULTILINE_COMMENT
+      // The lexer already decided this: `/**` with something in it is a
+      // DOC_COMMENT, while `/**/` and `/***/` stay ordinary block comments.
+      if (lexer.getTokenType() == PrismioTypes.DOC_COMMENT
           && startsWith(source, lexer.getTokenStart(), "/**")) {
         TextRange range = new TextRange(lexer.getTokenStart(), lexer.getTokenEnd());
         PsiElement owner = findOwner(declarations, range.getEndOffset());

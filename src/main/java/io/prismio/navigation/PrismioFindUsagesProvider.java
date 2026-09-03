@@ -6,7 +6,7 @@ import com.intellij.lang.findUsages.FindUsagesProvider;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.TokenSet;
 import io.prismio.PrismioLanguage;
-import io.prismio.lexer.PrismioLexerAdapter;
+import io.prismio.lexer.PrismioLexer;
 import io.prismio.psi.PrismioTokenSets;
 import io.prismio.psi.PrismioTypes;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 public final class PrismioFindUsagesProvider implements FindUsagesProvider {
   @Override
   public @NotNull WordsScanner getWordsScanner() {
-    return new DefaultWordsScanner(new PrismioLexerAdapter(), PrismioTokenSets.IDENTIFIERS,
+    return new DefaultWordsScanner(new PrismioLexer(), PrismioTokenSets.IDENTIFIERS,
         PrismioTokenSets.COMMENTS, TokenSet.EMPTY);
   }
 

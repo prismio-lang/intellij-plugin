@@ -1,0 +1,78 @@
+package io.prismio.lang;
+
+import java.util.Set;
+
+/**
+ * The word tables the lexer, completion and colour settings all read.
+ *
+ * <p>One copy, because three copies drift. Each list mirrors a specific place in
+ * the compiler and names it, so a reader checking whether this is current knows
+ * exactly which file to open.
+ */
+public final class PrismioWords {
+
+  private PrismioWords() {}
+
+  /**
+   * Reserved words — {@code isKeyword} in {@code src/lexer/token.psm}.
+   *
+   * <p>Note {@code and} and {@code or}: Prismio spells the logical operators as
+   * words. {@code &&} and {@code ||} also lex, but no source in the compiler,
+   * the standard library or the test suite uses them.
+   */
+  public static final Set<String> KEYWORDS = Set.of(
+      "import",
+      "match", "if", "else", "and", "or",
+      "true", "false",
+      "break", "continue", "return", "throw",
+      "while", "loop", "for", "in",
+      "let", "struct", "impl", "enum", "trait", "where", "fn", "extern",
+      "mut", "as",
+      "inout", "sink",
+      "region",
+      "none");
+
+  /**
+   * Words the parser gives meaning to in one position only.
+   *
+   * <p>Not in {@code isKeyword}, so each is a legal identifier elsewhere: a
+   * variable may be called {@code pin}. They are highlighted anyway because a
+   * reader wants to see them, and they are a separate token from a real keyword
+   * so that nothing here can make valid code look wrong.
+   *
+   * <p>The three visibility levels are public (0), private (1) and internal (2);
+   * a declaration with no modifier takes the default. {@code priv} was the
+   * pre-0.1 spelling of {@code private} and is gone, not aliased.
+   *
+   * <p>Sources: {@code src/parse/decl.psm} for the visibility levels, {@code dyn},
+   * {@code Self}, {@code type} and the FFI contracts; {@code src/parse/expr.psm}
+   * for {@code spawn}; {@code src/parse/stmt.psm} for {@code pin}.
+   */
+  public static final Set<String> CONTEXTUAL_KEYWORDS = Set.of(
+      "public", "private", "internal",
+      "dyn", "Self", "type", "spawn",
+      "pin", "unique",
+      "produce", "borrow", "alias", "free");
+
+  /**
+   * Built-in types — {@code typeFromSemKey} in {@code src/ast/types.psm}.
+   *
+   * <p>There is deliberately no {@code I32}: the compiler's table has I8, I16,
+   * I64 and Isize but never defined a 32-bit signed type, while the unsigned
+   * side has all four. Listing one here would highlight a type that does not
+   * resolve.
+   */
+  public static final Set<String> BUILTIN_TYPES = Set.of(
+      "Int", "Float", "Bool", "Char", "String", "Ptr", "Void",
+      "I8", "I16", "I64", "Isize",
+      "U8", "U16", "U32", "U64", "Usize");
+
+  /** Generic types the standard library ships; not known to the compiler itself. */
+  public static final Set<String> STDLIB_TYPES = Set.of(
+      "List", "Map", "Option", "Result", "Box", "Task", "Slice", "DataView", "Chan");
+
+  /** Modules resolvable as {@code import std.<leaf>}; the files in {@code std/}. */
+  public static final Set<String> STD_MODULES = Set.of(
+      "io", "string", "list", "map", "option", "fs", "process",
+      "display", "eq", "ord", "key", "copy", "iter");
+}

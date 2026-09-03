@@ -16,6 +16,7 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.util.ProcessingContext;
 import io.prismio.icons.PrismioIcons;
 import io.prismio.psi.PrismioFile;
+import io.prismio.lang.PrismioWords;
 import io.prismio.psi.PrismioTypes;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
@@ -36,10 +37,13 @@ public final class PrismioCompletionContributor extends CompletionContributor {
       Set.of("if", "else", "while", "for", "loop", "match");
 
   // Statement keywords
-  private static final Set<String> STATEMENT_KEYWORDS = Set.of("return", "break", "continue");
+  private static final Set<String> STATEMENT_KEYWORDS =
+      Set.of("return", "break", "continue", "throw");
 
-  // Type keywords
-  private static final Set<String> TYPE_KEYWORDS = Set.of("Int", "String", "Bool", "Char", "Float");
+  // Visibility precedes a declaration, so after one the user is choosing a
+  // declaration keyword rather than typing a name.
+  private static final Set<String> VISIBILITY_KEYWORDS =
+      Set.of("public", "private", "internal");
 
   public PrismioCompletionContributor() {
     extend(CompletionType.BASIC, PlatformPatterns.psiElement(),
@@ -167,11 +171,6 @@ public final class PrismioCompletionContributor extends CompletionContributor {
       return CompletionContext.BLOCK_CONTENT;
     }
 
-    // Check if we're after a semicolon (new statement)
-    if (prevType == PrismioTypes.SEMICOLON) {
-      return CompletionContext.STATEMENT_START;
-    }
-
     // Check if we're after a closing brace (possible else, or new statement)
     if (prevType == PrismioTypes.RBRACE) {
       return CompletionContext.STATEMENT_START;
@@ -225,6 +224,18 @@ public final class PrismioCompletionContributor extends CompletionContributor {
   // ==================== Completion Adders ====================
 
   private void addDeclarationCompletions(CompletionResultSet result) {
+    for (String visibility : new String[] {"public", "private", "internal"}) {
+      result.addElement(LookupElementBuilder.create(visibility)
+              .withTypeText("visibility")
+              .withInsertHandler(new SpaceInsertHandler())
+              .bold());
+    }
+
+    result.addElement(LookupElementBuilder.create("region")
+            .withTypeText("arena scope")
+            .withInsertHandler(new SpaceInsertHandler())
+            .bold());
+
     result.addElement(LookupElementBuilder.create("let")
             .withTypeText("variable")
             .withInsertHandler(new SpaceInsertHandler())
@@ -318,28 +329,29 @@ public final class PrismioCompletionContributor extends CompletionContributor {
     result.addElement(LookupElementBuilder.create("break").withTypeText("statement").bold());
 
     result.addElement(LookupElementBuilder.create("continue").withTypeText("statement").bold());
+
+    result.addElement(LookupElementBuilder.create("throw")
+            .withTypeText("statement")
+            .withInsertHandler(new SpaceInsertHandler())
+            .bold());
   }
 
   private void addTypeCompletions(CompletionResultSet result) {
-    result.addElement(LookupElementBuilder.create("Int")
-            .withTypeText("primitive type")
-            .withIcon(PrismioIcons.FILE));
+    // Both lists come from PrismioWords, so a type added to the language reaches
+    // completion and highlighting together. Sorted so the popup is stable.
+    PrismioWords.BUILTIN_TYPES.stream().sorted().forEach(name ->
+        result.addElement(LookupElementBuilder.create(name)
+            .withTypeText("built-in type")
+            .withIcon(PrismioIcons.FILE)));
 
-    result.addElement(LookupElementBuilder.create("String")
-            .withTypeText("primitive type")
-            .withIcon(PrismioIcons.FILE));
-
-    result.addElement(LookupElementBuilder.create("Bool")
-            .withTypeText("primitive type")
-            .withIcon(PrismioIcons.FILE));
-
-    result.addElement(LookupElementBuilder.create("Char")
-            .withTypeText("primitive type")
-            .withIcon(PrismioIcons.FILE));
-
-    result.addElement(LookupElementBuilder.create("Float")
-            .withTypeText("primitive type")
-            .withIcon(PrismioIcons.FILE));
+    // Offered with the bracket, because every one of these is generic and a bare
+    // `List` does not type-check.
+    PrismioWords.STDLIB_TYPES.stream().sorted().forEach(name ->
+        result.addElement(LookupElementBuilder.create(name)
+            .withTypeText("std type")
+            .withTailText("<>", true)
+            .withInsertHandler(new AngleBracketInsertHandler())
+            .withIcon(PrismioIcons.FILE)));
   }
 
   private void addBooleanLiterals(CompletionResultSet result) {
@@ -415,6 +427,15 @@ public final class PrismioCompletionContributor extends CompletionContributor {
   }
 
   // ==================== Insert Handlers ====================
+
+  /** Every std container is generic, so the caret lands between the brackets. */
+  private static class AngleBracketInsertHandler implements InsertHandler<LookupElement> {
+    @Override
+    public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement item) {
+      context.getDocument().insertString(context.getTailOffset(), "<>");
+      context.getEditor().getCaretModel().moveToOffset(context.getTailOffset() - 1);
+    }
+  }
 
   private static class SpaceInsertHandler implements InsertHandler<LookupElement> {
     @Override

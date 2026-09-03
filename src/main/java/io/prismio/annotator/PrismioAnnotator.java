@@ -230,8 +230,7 @@ public final class PrismioAnnotator implements Annotator {
     }
 
     IElementType nextType = nextSibling.getNode().getElementType();
-    boolean followedByColon = nextType == PrismioTypes.COLON
-        || (nextType == PrismioTypes.SEPARATOR && ":".equals(nextSibling.getText()));
+    boolean followedByColon = nextType == PrismioTypes.COLON;
     return followedByColon && isInsideFunctionParameters(element);
   }
 
@@ -319,7 +318,7 @@ public final class PrismioAnnotator implements Annotator {
         return true;
       }
       IElementType type = current.getNode().getElementType();
-      if (type == PrismioTypes.SEMICOLON || type == PrismioTypes.LBRACE
+      if (type == PrismioTypes.LBRACE
           || type == PrismioTypes.RBRACE) {
         return false;
       }

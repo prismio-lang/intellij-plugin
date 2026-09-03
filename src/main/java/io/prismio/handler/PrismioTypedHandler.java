@@ -32,7 +32,7 @@ public class PrismioTypedHandler extends TypedHandlerDelegate {
     // Complete a block-comment pair and leave the caret inside it. Do not do this
     // inside strings or existing comments, where /* is ordinary text.
     if (c == '*' && offset >= 2 && text.charAt(offset - 2) == '/' && !startsWith(text, offset, "*/")
-        && !isInsideLiteralOrComment(editor, offset - 2)) {
+        && !isEnclosedByLiteralOrComment(editor, offset - 2)) {
       EditorModificationUtil.insertStringAtCaret(editor, "*/", false, 0);
       return Result.STOP;
     }
@@ -100,15 +100,30 @@ public class PrismioTypedHandler extends TypedHandlerDelegate {
     return true;
   }
 
-  private static boolean isInsideLiteralOrComment(@NotNull Editor editor, int offset) {
+  /**
+   * Whether {@code offset} sits inside a literal or comment that began *before*
+   * it.
+   *
+   * <p>The distinction matters because a `/*` is a block comment the moment it is
+   * typed: the lexer runs an unterminated one to the end of the file, exactly as
+   * the compiler does. Asking only "is this a comment token" would therefore say
+   * yes to the comment the user is in the middle of opening, and auto-closing
+   * would never fire. Requiring the token to have started earlier distinguishes
+   * "I am opening a comment here" from "I am already inside one".
+   */
+  private static boolean isEnclosedByLiteralOrComment(@NotNull Editor editor, int offset) {
     if (editor.getDocument().getTextLength() == 0) {
       return false;
     }
 
     HighlighterIterator iterator = editor.getHighlighter().createIterator(offset);
+    if (iterator.atEnd() || iterator.getStart() >= offset) {
+      return false;
+    }
     IElementType tokenType = iterator.getTokenType();
     return tokenType == PrismioTypes.STRING_LITERAL || tokenType == PrismioTypes.CHARACTER_LITERAL
-        || tokenType == PrismioTypes.SINGLE_LINE_COMMENT
-        || tokenType == PrismioTypes.MULTILINE_COMMENT;
+        || tokenType == PrismioTypes.LINE_COMMENT
+        || tokenType == PrismioTypes.DOC_COMMENT
+        || tokenType == PrismioTypes.BLOCK_COMMENT;
   }
 }

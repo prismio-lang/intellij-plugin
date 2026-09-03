@@ -14,7 +14,7 @@ import io.prismio.debugger.PrismioLineBreakpointType;
 import io.prismio.documentation.PrismioInlineDocumentationProvider;
 import io.prismio.folding.PrismioFoldingBuilder;
 import io.prismio.highlighter.PrismioSyntaxHighlighter;
-import io.prismio.lexer.PrismioLexerAdapter;
+import io.prismio.lexer.PrismioLexer;
 import io.prismio.navigation.Declaration;
 import io.prismio.navigation.DeclarationKind;
 import io.prismio.navigation.DeclarationScanner;
@@ -134,7 +134,9 @@ public class PrismioCodeInsightTest extends BasePlatformTestCase {
     WriteCommandAction.writeCommandAction(getProject())
         .run(() -> CodeStyleManager.getInstance(getProject()).reformat(myFixture.getFile()));
 
-    myFixture.checkResult("fn main() {let value: Int = 1 + 2}");
+    // `{ let`, not `{let`. A keyword now gets a space on both sides, which is
+    // the rule that stopped `a and b` collapsing into `aand b`.
+    myFixture.checkResult("fn main() { let value: Int = 1 + 2}");
   }
 
   public void testMultilineFunctionBodyIsFoldable() {
@@ -175,13 +177,34 @@ public class PrismioCodeInsightTest extends BasePlatformTestCase {
   }
 
   public void testLexerAcceptsRepresentativeProgram() {
-    PrismioLexerAdapter lexer = new PrismioLexerAdapter();
-    lexer.start("fn main() -> Int { // result\n let value: Int = 40 + 2; return value }");
+    PrismioLexer lexer = new PrismioLexer();
+    lexer.start("fn main() -> Int { // result\n let value: Int? = ~40 + 2\n return value }");
 
     while (lexer.getTokenType() != null) {
       assertNotSame(TokenType.BAD_CHARACTER, lexer.getTokenType());
       lexer.advance();
     }
+  }
+
+  /**
+   * `;` is in neither `isSeparator` nor `isOperator`, so the compiler rejects it
+   * with "unexpected character". The editor says so too — this fixture used to
+   * contain one, and the lexer used to call it a token.
+   */
+  public void testSemicolonIsNotPartOfTheLanguage() {
+    PrismioLexer lexer = new PrismioLexer();
+    String source = "let value = 1;";
+    lexer.start(source);
+
+    boolean flagged = false;
+    while (lexer.getTokenType() != null) {
+      if (lexer.getTokenType() == TokenType.BAD_CHARACTER) {
+        assertEquals(";", source.substring(lexer.getTokenStart(), lexer.getTokenEnd()));
+        flagged = true;
+      }
+      lexer.advance();
+    }
+    assertTrue("a semicolon should be reported as a bad character", flagged);
   }
 
   public void testDeclarationScannerFindsRealPrismioSymbolsAndSkipsLocals() {

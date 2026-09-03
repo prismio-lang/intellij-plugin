@@ -10,7 +10,7 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpointType;
 import io.prismio.PrismioFileType;
-import io.prismio.lexer.PrismioLexerAdapter;
+import io.prismio.lexer.PrismioLexer;
 import io.prismio.psi.PrismioTypes;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -44,12 +44,12 @@ public final class PrismioLineBreakpointType extends XLineBreakpointType<XBreakp
       return false;
     }
 
-    Lexer lexer = new PrismioLexerAdapter();
+    Lexer lexer = new PrismioLexer();
     lexer.start(document.getCharsSequence(), startOffset, endOffset, 0);
     while (lexer.getTokenType() != null) {
       IElementType tokenType = lexer.getTokenType();
-      if (tokenType != TokenType.WHITE_SPACE && tokenType != PrismioTypes.SINGLE_LINE_COMMENT
-          && tokenType != PrismioTypes.MULTILINE_COMMENT && tokenType != PrismioTypes.LBRACE
+      if (tokenType != TokenType.WHITE_SPACE && tokenType != PrismioTypes.LINE_COMMENT
+          && tokenType != PrismioTypes.BLOCK_COMMENT && tokenType != PrismioTypes.LBRACE
           && tokenType != PrismioTypes.RBRACE) {
         return true;
       }

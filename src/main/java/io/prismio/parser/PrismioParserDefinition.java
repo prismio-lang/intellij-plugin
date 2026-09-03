@@ -11,7 +11,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import io.prismio.PrismioLanguage;
-import io.prismio.lexer.PrismioLexerAdapter;
+import io.prismio.lexer.PrismioLexer;
 import io.prismio.psi.PrismioFile;
 import io.prismio.psi.PrismioTokenSets;
 import io.prismio.psi.PrismioTypes;
@@ -23,7 +23,7 @@ public final class PrismioParserDefinition implements ParserDefinition {
   @NotNull
   @Override
   public Lexer createLexer(Project project) {
-    return new PrismioLexerAdapter();
+    return new PrismioLexer();
   }
 
   @NotNull

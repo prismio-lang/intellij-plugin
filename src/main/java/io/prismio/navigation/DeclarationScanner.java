@@ -4,8 +4,12 @@ import com.intellij.lexer.Lexer;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
+import com.intellij.openapi.util.Key;
 import com.intellij.psi.tree.IElementType;
-import io.prismio.lexer.PrismioLexerAdapter;
+import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import io.prismio.lexer.PrismioLexer;
 import io.prismio.psi.PrismioTypes;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +19,24 @@ import org.jetbrains.annotations.Nullable;
 public final class DeclarationScanner {
   private DeclarationScanner() {}
 
+  private static final Key<CachedValue<List<Declaration>>> DECLARATIONS =
+      Key.create("prismio.declarations");
+
+  /**
+   * {@link #collect} re-lexes the whole file, which is fine once and quadratic
+   * when every identifier in a file asks for it — which is exactly what
+   * reference resolution does on each highlighting pass. Cached against the
+   * file's modification count, so an edit invalidates it and nothing else does.
+   */
+  public static @NotNull List<Declaration> collectCached(@NotNull PsiFile file) {
+    return CachedValuesManager.getCachedValue(file, DECLARATIONS,
+        () -> CachedValueProvider.Result.create(collect(file), file));
+  }
+
   public static @NotNull List<Declaration> collect(@NotNull PsiFile file) {
     List<Declaration> declarations = new ArrayList<>();
     CharSequence text = file.getViewProvider().getContents();
-    Lexer lexer = new PrismioLexerAdapter();
+    Lexer lexer = new PrismioLexer();
     lexer.start(text);
 
     int braceDepth = 0;
@@ -40,8 +58,8 @@ public final class DeclarationScanner {
           declarations.add(new Declaration(element, tokenText, pendingKind));
         }
         pendingKind = null;
-      } else if (tokenType != TokenType.WHITE_SPACE && tokenType != PrismioTypes.SINGLE_LINE_COMMENT
-          && tokenType != PrismioTypes.MULTILINE_COMMENT) {
+      } else if (tokenType != TokenType.WHITE_SPACE && tokenType != PrismioTypes.LINE_COMMENT
+          && tokenType != PrismioTypes.BLOCK_COMMENT) {
         pendingKind = null;
       }
 
@@ -61,7 +79,7 @@ public final class DeclarationScanner {
       return null;
     }
     int offset = element.getTextOffset();
-    return collect(file)
+    return collectCached(file)
         .stream()
         .filter(declaration -> {
           PsiElement declarationElement = declaration.getElement();

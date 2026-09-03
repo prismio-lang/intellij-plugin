@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiFile;
-import io.prismio.lexer.PrismioLexerAdapter;
+import io.prismio.lexer.PrismioLexer;
 import io.prismio.psi.PrismioFile;
 import io.prismio.psi.PrismioTypes;
 import org.jetbrains.annotations.NotNull;
@@ -141,10 +141,10 @@ public class PrismioEnterHandler extends EnterHandlerDelegateAdapter {
   private static BlockCommentContext findOpenBlockComment(
       @NotNull Document document, int caretOffset) {
     CharSequence text = document.getCharsSequence();
-    Lexer lexer = new PrismioLexerAdapter();
+    Lexer lexer = new PrismioLexer();
     lexer.start(text);
     while (lexer.getTokenType() != null) {
-      if (lexer.getTokenType() == PrismioTypes.MULTILINE_COMMENT
+      if (lexer.getTokenType() == PrismioTypes.BLOCK_COMMENT
           && lexer.getTokenStart() < caretOffset && lexer.getTokenEnd() >= caretOffset) {
         int openLine = document.getLineNumber(lexer.getTokenStart());
         int openLineStart = document.getLineStartOffset(openLine);

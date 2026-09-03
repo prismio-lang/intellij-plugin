@@ -8,48 +8,54 @@
     <description><![CDATA[
         <h2>Prismio Language Support</h2>
         <p>
-            Language support for Prismio (.psm files) in JetBrains IDEs.
+            Language support for Prismio (<code>.psm</code>) and its project
+            manifests (<code>build.ums</code>) in JetBrains IDEs.
         </p>
 
-        <h3>Features:</h3>
+        <h3>Prismio</h3>
         <ul>
-            <li><b>Syntax Highlighting</b> - Theme-aware lexical and semantic colors for declarations, calls, types, imports, fields, variables, constants, and enum variants</li>
-            <li><b>Code Completion</b> - Keyword, type, and live template suggestions</li>
-            <li><b>Code Formatting</b> - Automatic formatting with customizable code style settings</li>
-            <li><b>Live Templates</b> - Snippets for fn, struct, enum, impl, if, while, for, match, let, and more</li>
-            <li><b>Delimiter Matching</b> - Auto-closing of parentheses, brackets, braces, quotes, and block comments</li>
-            <li><b>Smart Indentation</b> - Brace-aware blocks and consistent block-comment continuation</li>
-            <li><b>Comment Toggling</b> - Line and block comment support (Ctrl+/)</li>
-            <li><b>Structure View</b> - Navigate code structure via the Structure panel</li>
-            <li><b>Code Folding</b> - Collapse multiline function bodies from the editor gutter</li>
-            <li><b>Line Breakpoints</b> - Add persistent breakpoint markers on meaningful Prismio lines</li>
-            <li><b>Find Usages</b> - Identifier-aware usage search and element descriptions</li>
-            <li><b>Documentation</b> - Declaration summaries and toggleable rendered documentation comments</li>
-            <li><b>Color Settings</b> - Fully configurable color scheme for all token types</li>
-            <li><b>Spellchecking</b> - Integrated spell checking for strings and comments</li>
-            <li><b>Go to Symbol</b> - Navigate to symbols across the project</li>
-            <li><b>New File Action</b> - Create .psm files from the New menu</li>
+            <li><b>Syntax Highlighting</b> - the complete keyword set, including the word operators <code>and</code> and <code>or</code>, the contextual keywords (<code>public</code>, <code>private</code>, <code>internal</code>, <code>dyn</code>, <code>spawn</code>, <code>pin</code>, <code>unique</code>, <code>Self</code>) and the FFI contract names (<code>produce</code>, <code>borrow</code>, <code>alias</code>, <code>free</code>)</li>
+            <li><b>Nesting block comments</b> - <code>/* ... /* ... */ ... */</code>, matching the compiler's depth counting</li>
+            <li><b>Type awareness</b> - built-in types told apart from the generic types the standard library ships</li>
+            <li><b>Semantic Highlighting</b> - declarations, calls, fields, parameters, variables, constants and enum variants</li>
+            <li><b>Go to Declaration</b> - Cmd+Click and Cmd+B from a name to where it is declared, across files; from an <code>import</code> to the module it names</li>
+            <li><b>Find Usages and usage highlighting</b> - every name carries a reference, so usages are found and the symbol under the caret is highlighted</li>
+            <li><b>Rename</b> - renaming a declaration rewrites the call sites that resolve to it</li>
+            <li><b>Code Completion</b> - position-aware keyword, type and template suggestions</li>
+            <li><b>Formatting, folding, structure view, find usages, documentation, spellchecking and line breakpoints</b></li>
+        </ul>
+
+        <h3>UMS manifests</h3>
+        <ul>
+            <li><b>Position-aware highlighting</b> - a manifest has no keywords, so block names, property keys and declaration calls are recognised by where they appear. <code>library</code> is coloured as a target kind inside <code>targets</code> and as a linker input inside <code>link</code></li>
+            <li><b>Completion from the same tables</b> - suggestions come from the block you are inside, so the editor never offers a name it would then warn about</li>
+            <li><b>Unknown-name warnings</b> - a weak warning naming what is valid there, never an error: UMS parses new blocks before its model learns them</li>
+            <li><b>Formatting</b> - four-space blocks, <code>key = value</code> spacing, tight call parentheses</li>
+            <li><b>Structure View</b> - the block tree, labelled with each declaration's first argument</li>
+            <li><b>Both comment spellings</b> - <code>//</code> and <code>#</code></li>
+            <li><b>New UMS Manifest</b> action, brace matching, quote handling and prose-only spellchecking</li>
         </ul>
     ]]></description>
 
     <change-notes><![CDATA[
+        <h3>Version 1.1.0</h3>
+        <ul>
+            <li><b>Reformatting no longer breaks code.</b> A blanket "no space after an identifier" rule applied to `and`, `or`, `as` and `in` — which are keywords used after an expression — so Reformat Code turned <code>a and b</code> into <code>aand b</code> and <code>for i in xs</code> into <code>for iin xs</code>. Type arguments were mangled too: <code>List&lt;Int&gt;</code> became <code>List &lt; Int &gt;</code>, because <code>&lt;</code> lexes as a relational operator. Reformatting every source file in the compiler repository now preserves the token stream exactly.</li>
+            <li><b>Go to Declaration, Find Usages, usage highlighting and Rename.</b> Identifiers had no references at all, so three of those silently did nothing and Cmd+Click never moved. Identifier tokens now get their own PSI element that carries a reference; resolution searches the current file first, then the project.</li>
+            <li><b>Cmd+Click on an import</b> opens the module it names.</li>
+            <li><b>UMS manifest support</b> — <code>.ums</code> files and <code>build.ums</code> get their own language: position-aware highlighting and completion, formatting, structure view, brace matching, both comment spellings, and a New UMS Manifest action.</li>
+            <li><b>The Prismio lexer now matches the language.</b> It previously had 19 of the 30 keywords and knew none of the contextual ones, so <code>and</code>, <code>or</code>, <code>where</code>, <code>as</code>, <code>inout</code>, <code>sink</code>, <code>region</code>, <code>none</code>, <code>throw</code>, <code>public</code>, <code>private</code>, <code>internal</code>, <code>dyn</code>, <code>spawn</code>, <code>pin</code> and <code>unique</code> all read as plain identifiers.</li>
+            <li><b>Nesting block comments</b>, matching the compiler's depth counting rather than ending at the first <code>*/</code>.</li>
+            <li><b>Range</b> <code>..</code> is its own token; <code>0..n</code> no longer lexes as a malformed float.</li>
+            <li>Built-in types are told apart from the standard library's generic types, and <code>I32</code> is no longer highlighted as a type the compiler does not define.</li>
+            <li><code>_</code> digit separators are no longer accepted: the compiler's scanner has never had them.</li>
+            <li><code>///</code> lines are recognised as documentation.</li>
+            <li>The lexer and parser are hand-written, replacing generated JFlex and Grammar-Kit sources. Contextual keywords are not a lexical property, so a lexical grammar could not express them.</li>
+        </ul>
+
         <h3>Version 1.0.0</h3>
         <ul>
-            <li>Rich theme-aware semantic highlighting for declarations, calls, types, imports, fields, variables, constants, and enum variants</li>
-            <li>Code completion for keywords, types, and live templates</li>
-            <li>Code formatting with customizable style settings</li>
-            <li>15 live templates (fn, struct, enum, impl, if, while, for, match, let, and more)</li>
-            <li>Brace, bracket, quote, and block-comment auto-closing</li>
-            <li>Smart brace-aware indentation on Enter</li>
-            <li>Line and block comment toggling</li>
-            <li>Structure view and Go to Symbol navigation</li>
-            <li>Function-body code folding and gutter line-breakpoint markers</li>
-            <li>Find usages and Go to Symbol</li>
-            <li>Quick documentation provider</li>
-            <li>Configurable color settings page</li>
-            <li>Spellchecking in strings and comments</li>
-            <li>New Prismio File action with file icon</li>
-            <li>Compatible with IntelliJ IDEA, CLion, and other JetBrains IDEs based on platform 262+</li>
+            <li>Initial release: highlighting, completion, formatting, live templates, structure view, folding, find usages, documentation, colour settings, spellchecking and line breakpoints</li>
         </ul>
     ]]></change-notes>
 
@@ -141,6 +147,7 @@
 
         <!-- File Templates -->
         <internalFileTemplate name="PrismioFile"/>
+        <internalFileTemplate name="UmsManifest"/>
 
         <!-- Find Usages -->
         <lang.findUsagesProvider
@@ -161,9 +168,86 @@
                 language="Prismio"
                 implementationClass="io.prismio.spellcheck.PrismioSpellcheckingStrategy"/>
 
+        <!-- Identifier tokens get a PSI class of their own, which is what lets
+             them carry a reference. Find Usages and highlight-usages-under-caret
+             are built on references; a plain leaf is never asked for any, so
+             both silently reported nothing. -->
+        <lang.ast.factory
+                language="Prismio"
+                implementationClass="io.prismio.psi.PrismioAstFactory"/>
+
+        <!-- Rename rewrites each resolved reference through a manipulator. -->
+        <lang.elementManipulator
+                forClass="io.prismio.psi.PrismioIdentifier"
+                implementationClass="io.prismio.psi.PrismioIdentifierManipulator"/>
+
+        <!-- Go to Declaration: Cmd+Click and Cmd+B on a name -->
+        <gotoDeclarationHandler
+                implementation="io.prismio.navigation.PrismioGotoDeclarationHandler"/>
+
         <!-- Go to Symbol -->
         <gotoSymbolContributor
                 implementation="io.prismio.navigation.PrismioChooseByNameContributor"/>
+
+        <!-- ============================================================
+             UMS manifests (build.ums)
+
+             A separate language from Prismio: `ums/ARCHITECTURE.md` states the
+             manifest DSL deliberately does not reuse the Prismio grammar, and
+             the two disagree on comments, literals and structure.
+             ============================================================ -->
+        <fileType
+                name="UMS Manifest"
+                implementationClass="io.prismio.ums.UmsFileType"
+                fieldName="INSTANCE"
+                language="UMS"
+                extensions="ums"
+                fileNames="build.ums"/>
+
+        <lang.parserDefinition
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsParserDefinition"/>
+
+        <lang.syntaxHighlighterFactory
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsSyntaxHighlighterFactory"/>
+
+        <colorSettingsPage implementation="io.prismio.ums.UmsColorSettingsPage"/>
+
+        <!-- Colours the names the manifest system recognises, and warns about
+             the ones it does not. A manifest has no keywords, so this is the
+             only place that distinction can be drawn. -->
+        <annotator
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsAnnotator"/>
+
+        <completion.contributor
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsCompletionContributor"/>
+
+        <lang.formatter
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsFormattingModelBuilder"/>
+
+        <lang.commenter
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsCommenter"/>
+
+        <lang.braceMatcher
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsBraceMatcher"/>
+
+        <lang.quoteHandler
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsQuoteHandler"/>
+
+        <lang.psiStructureViewFactory
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsStructureViewFactory"/>
+
+        <spellchecker.support
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsSpellcheckingStrategy"/>
 
         <!-- Gutter Line Breakpoints -->
         <xdebugger.breakpointType
@@ -179,6 +263,16 @@
                 description="Create new Prismio file"
                 icon="/icons/prismio.png">
             <add-to-group group-id="NewGroup" anchor="first"/>
+        </action>
+
+        <action
+                id="io.prismio.action.createManifest"
+                class="io.prismio.ums.CreateUmsManifestAction"
+                text="UMS Manifest"
+                description="Create a Prismio project manifest"
+                icon="/icons/prismio.png">
+            <add-to-group group-id="NewGroup" anchor="after"
+                          relative-to-action="io.prismio.action.createFile"/>
         </action>
     </actions>
 </idea-plugin>

@@ -17,7 +17,7 @@ Thank you for your interest in contributing! This plugin is the official JetBrai
 - [Development Guide](#development-guide)
   - [Project Layout](#project-layout)
   - [Key Technologies](#key-technologies)
-  - [Working with the Grammar](#working-with-the-grammar)
+  - [Working with the lexers](#working-with-the-lexers)
   - [Working with the Lexer](#working-with-the-lexer)
   - [Running & Testing](#running--testing)
 - [Coding Standards](#coding-standards)
@@ -40,14 +40,12 @@ By participating in this project you agree to abide by our [Code of Conduct](COD
 | Tool | Minimum Version | Notes |
 |------|----------------|-------|
 | JDK | 26 | `JAVA_HOME` must be set |
-| IntelliJ IDEA | 2026.2.1 | For the Grammar-Kit & JFlex plugins |
+| IntelliJ IDEA | 2026.2.1 | For running the plugin sandbox |
 | Gradle | 9.6.1 | Wrapper (`./gradlew`) is included — no separate install needed |
 | Git | Any recent version | |
 
 **Recommended IntelliJ Plugins (for development):**
 
-- [Grammar-Kit](https://plugins.jetbrains.com/plugin/6606-grammar-kit) — BNF grammar editing and PSI generation
-- [JFlex Support](https://plugins.jetbrains.com/plugin/263-jflex-support) — JFlex lexer editing
 
 ### Development Setup
 
@@ -128,7 +126,7 @@ For large changes (new subsystems, significant refactors), please **open a discu
 8. A maintainer will review your PR. Please be responsive to feedback — PRs with no activity for 14 days may be closed.
 
 > [!IMPORTANT]
-> PRs that change the BNF grammar (`Prismio.bnf`) **must** also regenerate the PSI classes and parser using Grammar-Kit, and commit the generated output under `src/main/gen/`.
+> PRs that change a lexer **must** add a case to `PrismioLexerTest` or `UmsLexerTest` showing the behaviour, and must say which file in the compiler the change follows.
 
 ---
 
@@ -139,7 +137,6 @@ For large changes (new subsystems, significant refactors), please **open a discu
 ```
 src/
 └── main/
-    ├── gen/io/prismio/       # Generated lexer, parser, and token types
     ├── java/io/prismio/
     │   ├── annotator/          # Semantic annotations (PrismioAnnotator.java)
     │   ├── completion/         # CompletionContributor
@@ -158,8 +155,8 @@ src/
     │   ├── settings/           # Color and code-style settings
     │   ├── spellcheck/         # Comment and string spellchecking
     │   ├── template/           # New Prismio File action
-    │   ├── Prismio.bnf         # ← Grammar-Kit BNF grammar
-    │   └── Prismio.flex        # ← JFlex lexer spec
+    │   ├── lang/               # Keyword, type and module tables
+    │   └── ums/                # The UMS manifest language, end to end
     └── resources/
         ├── META-INF/plugin.xml # ← Extension point registrations
         ├── colorSchemes/       # Default token colors
@@ -173,32 +170,35 @@ src/
 | Technology | Role |
 |---|---|
 | [JetBrains IntelliJ Platform SDK](https://plugins.jetbrains.com/docs/intellij/) | Plugin APIs |
-| [Grammar-Kit (BNF)](https://github.com/JetBrains/Grammar-Kit) | PSI parser & tree generation from `Prismio.bnf` |
-| [JFlex](https://jflex.de/) | Lexer generation from `Prismio.flex` |
 | [IntelliJ Platform Gradle Plugin v2](https://github.com/JetBrains/intellij-platform-gradle-plugin) | Build, packaging, verification |
 
-### Working with the Grammar
+### Working with the lexers
 
-The grammar is defined in [`Prismio.bnf`](src/main/java/io/prismio/Prismio.bnf) using the Grammar-Kit BNF format.
+Both lexers are written by hand. There is no JFlex step and no Grammar-Kit step,
+and nothing under `src/main/gen/`.
 
-To regenerate the PSI parser and element classes after editing the grammar:
+That is a deliberate choice rather than a shortcut. Prismio has contextual
+keywords — `private`, `dyn`, `pin`, `produce` are reserved in one position and
+ordinary identifiers everywhere else — and which of the two a word is cannot be
+decided by a regular expression. A lexical grammar could only ever colour them
+all as identifiers, which is what the generated lexer did. The parser was worse
+value still: the PSI here is a flat token list on purpose, so 121 generated lines
+said exactly what 20 hand-written ones say.
 
-1. Open `Prismio.bnf` in IntelliJ IDEA.
-2. Right-click inside the file → **Generate Parser Code**.
-3. The generated output lands in `src/main/gen/`. **Commit these files.**
+| File | Follows |
+|---|---|
+| `lexer/PrismioLexer.java` | `src/lexer/scanner.psm` in the compiler |
+| `lang/PrismioWords.java` | `src/lexer/token.psm`, `src/ast/types.psm`, `src/parse/decl.psm` |
+| `ums/UmsLexer.java` | `ums/parser/lexer.psm` |
+| `ums/UmsWords.java` | `ums/model/lowering.psm` |
 
-### Working with the Lexer
+Each of those files names its source in a comment. When the language gains a
+keyword, the compiler changes first and these follow.
 
-The lexer is defined in [`Prismio.flex`](src/main/java/io/prismio/Prismio.flex) (JFlex format).
-
-To regenerate the lexer after editing:
-
-1. Open `Prismio.flex` in IntelliJ IDEA.
-2. Right-click → **Run JFlex Generator**.
-3. The generated `PrismioLexer.java` lands in `src/main/gen/`. **Commit it.**
-
-> [!WARNING]
-> Never hand-edit generated files under `src/main/gen/`. They will be overwritten the next time the generator runs.
+`PrismioLexerTest` and `UmsLexerTest` compare the lexers against the language
+directly, with no IDE fixture in the way. Add a case there before changing a
+lexer: every test in `PrismioLexerTest` is something the generated lexer got
+wrong, which is the best argument for keeping them.
 
 ### Running & Testing
 
@@ -227,7 +227,6 @@ To regenerate the lexer after editing:
 - All public methods and classes must have Javadoc comments.
 - Do not suppress warnings with `@SuppressWarnings` without a comment explaining why.
 - Avoid platform-deprecated APIs; check for yellow warnings in the IDE.
-- Generated code (under `src/main/gen/`) is exempt from style rules.
 
 ---
 

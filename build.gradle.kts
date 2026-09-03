@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.prismio"
-version = "1.0.0"
+version = "1.1.0"
 
 repositories {
   mavenCentral()
@@ -14,14 +14,6 @@ repositories {
   intellijPlatform {
     defaultRepositories()
     intellijDependencies()
-  }
-}
-
-sourceSets {
-  main {
-    java {
-      srcDirs("src/main/gen")
-    }
   }
 }
 
@@ -46,6 +38,13 @@ java {
   }
   sourceCompatibility = JavaVersion.VERSION_25
   targetCompatibility = JavaVersion.VERSION_25
+}
+
+// The corpus test lexes every .psm in a real checkout. Point it at one to run
+// it; without the property it skips, so the suite passes for a contributor who
+// only has this repository.
+tasks.withType<Test>().configureEach {
+  System.getProperty("prismio.checkout")?.let { systemProperty("prismio.checkout", it) }
 }
 
 tasks.withType<JavaCompile>().configureEach {

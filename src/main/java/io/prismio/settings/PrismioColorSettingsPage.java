@@ -19,7 +19,11 @@ import org.jetbrains.annotations.Nullable;
 public final class PrismioColorSettingsPage implements ColorSettingsPage {
   private static final AttributesDescriptor[] DESCRIPTORS = new AttributesDescriptor[] {// Keywords
       new AttributesDescriptor("Keywords//Keyword", PrismioSyntaxHighlighter.KEYWORD),
-      new AttributesDescriptor("Keywords//Type Keyword", PrismioSyntaxHighlighter.TYPE_KEYWORD),
+      new AttributesDescriptor(
+          "Keywords//Contextual keyword", PrismioSyntaxHighlighter.CONTEXTUAL_KEYWORD),
+      new AttributesDescriptor("Keywords//Built-in type", PrismioSyntaxHighlighter.BUILTIN_TYPE),
+      new AttributesDescriptor("Keywords//Standard library type",
+          PrismioSyntaxHighlighter.STDLIB_TYPE),
 
       // Literals
       new AttributesDescriptor("Literals//String", PrismioSyntaxHighlighter.STRING),
@@ -62,6 +66,8 @@ public final class PrismioColorSettingsPage implements ColorSettingsPage {
       // Comments
       new AttributesDescriptor("Comments//Line Comment", PrismioSyntaxHighlighter.LINE_COMMENT),
       new AttributesDescriptor("Comments//Block Comment", PrismioSyntaxHighlighter.BLOCK_COMMENT),
+      new AttributesDescriptor(
+          "Comments//Documentation comment", PrismioSyntaxHighlighter.DOC_COMMENT),
 
       // Special
       new AttributesDescriptor("Special//Bad Character", PrismioSyntaxHighlighter.BAD_CHARACTER)};
@@ -82,190 +88,69 @@ public final class PrismioColorSettingsPage implements ColorSettingsPage {
   @Override
   public String getDemoText() {
     return """
-            // Prismio Language Demo - Complete Syntax Showcase
-            /* 
-             * Multi-line comment demonstrating
-             * comprehensive syntax highlighting
-             */
-            
-            import <importPath>prismio.io</importPath>
-            import prismio.collections
-            
-            // External function declarations
-            extern fn println(msg: String)
-            extern fn println_int(value: Int)
-            extern fn str_length(s: String) -> Int
-            
-            // Struct definition
+            // Every construct below is accepted by the compiler in this repository.
+            /* Block comments nest, /* like this one */ which is what makes it safe
+               to comment out a region that already contains a comment. */
+
+            import <importPath>std.io</importPath>
+            import std.string
+
+            // The FFI contract names are contextual keywords, not reserved words.
+            extern fn read_file(path: String borrow) -> String produce(free)
+
             struct <structName>Point</structName> {
                 <field>x</field>: Int,
-                y: Int
+                y: Float
             }
-            
-            struct Person {
-                name: String,
-                age: Int,
-                active: Bool
-            }
-            
-            // Enum definition
+
             enum <enumName>Direction</enumName> {
                 <enumVariant>North</enumVariant>,
-                South,
-                East,
-                West
+                South
             }
-            
-            enum Result {
-                Success,
-                Error
-            }
-            
-            // Trait definition
+
             trait <traitName>Drawable</traitName> {
-                fn draw()
+                let MAX: Int
+                type Output
+                fn draw(self) -> String
             }
-            
-            // Implementation
-            impl Point {
-                fn distance(self) -> Int {
-                    return self.x + self.y
-                }
-                
-                fn new(x: Int, y: Int) -> Point {
-                    return Point { x: x, y: y }
+
+            impl<T: Drawable> Box<T> where T: Copy {
+                private fn render(self, index: Usize) -> String {
+                    return self.value.draw()
                 }
             }
-            
-            // Global constants
+
             let <constant>MAX_SIZE</constant> = 1000
-            let PI = 3.14159
-            let GREETING = "Hello, Prismio!"
-            
-            // Function with parameters and return type
-            fn <functionDeclaration>calculate</functionDeclaration>(<parameter>a</parameter>: Int, b: Int, op: Char) -> Int {
-                let mut <mutableVariable>result</mutableVariable> = 0
-                
-                if (op == '+') {
-                    result = a + b
-                } else {
-                    if (op == '-') {
-                        result = a - b
-                    } else {
-                        if (op == '*') {
-                            result = a * b
-                        } else {
-                            result = a / b
-                        }
+
+            public fn <functionDecl>classify</functionDecl>(<parameter>value</parameter>: Int) -> Bool {
+                let <localVar>doubled</localVar> = value * 2
+                let mut <mutableVar>total</mutableVar> = 0
+
+                // `and` and `or` are the logical operators; `..` is a range.
+                for index in 0..doubled {
+                    if (index > 3 and index != 7) {
+                        total += index
                     }
                 }
-                
-                return result
-            }
-            
-            // Recursive function
-            fn fibonacci(n: Int) -> Int {
-                if (n <= 1) {
-                    return n
-                } else {
-                    let a = fibonacci(n - 1)
-                    let b = fibonacci(n - 2)
-                    return a + b
-                }
-            }
-            
-            // Function with loops
-            fn sum_to_n(n: Int) -> Int {
-                let mut sum = 0
-                let mut i = 1
-                
-                while (i <= n) {
-                    sum = sum + i
-                    i = i + 1
-                }
-                
-                return sum
-            }
-            
-            // Function with arrays
-            fn process_array() {
-                let numbers: [Int] = [1, 2, 3, 4, 5]
-                let matrix: [[Int]] = [[1, 2], [3, 4]]
-                
-                let <localVariable>first</localVariable> = numbers[0]
-                let value = matrix[0][1]
-                
-                println_int(first)
-                println_int(value)
-            }
-            
-            // Match expression
-            fn classify(value: Int) -> String {
+
                 match value {
-                    0 => "zero",
-                    1 => "one",
-                    _ => "other"
+                    0 => return false,
+                    _ => return total >= 0
                 }
             }
-            
-            // Main entry point
-            fn main() {
-                // Variable declarations
-                let x = 42
-                let y = 3.14
-                let name = "Alice"
-                let flag = true
-                let ch = 'A'
-                
-                // Mutable variables
-                let mut counter = 0
-                let mut sum = 0
-                
-                // Function calls
-                let result = <functionCall>calculate</functionCall>(10, 5, '+')
-                let fib = fibonacci(10)
-                let total = sum_to_n(100)
-                
-                // String operations
-                let greeting = "Hello, World!"
-                let len = str_length(greeting)
-                
-                // Output
-                println(greeting)
-                println_int(result)
-                println_int(fib)
-                
-                // Control flow
-                if (counter < 10) {
-                    counter = counter + 1
+
+            fn main() -> Int {
+                let items: List<Int> = list_new()
+                let text = "escapes: \\n and \\t"
+                let letter = 'p'
+
+                region arena pin(4096) {
+                    let point = Point { x: 1, y: 2.5 }
+                    <functionCall>println</functionCall>(<methodCall>strFromInt</methodCall>(point.x))
                 }
-                
-                while (sum < 100) {
-                    sum = sum + counter
-                    counter = counter + 1
-                }
-                
-                // For loop
-                for (i in range) {
-                    println_int(i)
-                }
-                
-                // Infinite loop with break
-                loop {
-                    if (counter > 20) {
-                        break
-                    }
-                    counter = counter + 1
-                }
-                
-                // Create struct instance
-                let point = Point { x: 10, y: 20 }
-                let distance = point.<methodCall>distance</methodCall>()
-                
-                // Enum usage
-                let dir = Direction::North
-                
-                println("Program completed successfully!")
+
+                spawn classify(41)
+                return 0
             }
             """;
   }

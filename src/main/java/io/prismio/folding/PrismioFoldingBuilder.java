@@ -9,7 +9,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
-import io.prismio.lexer.PrismioLexerAdapter;
+import io.prismio.lexer.PrismioLexer;
 import io.prismio.psi.PrismioTypes;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ public final class PrismioFoldingBuilder extends FoldingBuilderEx implements Dum
   public FoldingDescriptor @NotNull[] buildFoldRegions(
       @NotNull PsiElement root, @NotNull Document document, boolean quick) {
     List<FoldingDescriptor> descriptors = new ArrayList<>();
-    Lexer lexer = new PrismioLexerAdapter();
+    Lexer lexer = new PrismioLexer();
     lexer.start(document.getCharsSequence());
 
     boolean waitingForBody = false;
@@ -76,7 +76,7 @@ public final class PrismioFoldingBuilder extends FoldingBuilderEx implements Dum
           bodyStartOffset = tokenEnd;
           bodyDepth = 1;
           waitingForBody = false;
-        } else if (tokenType == PrismioTypes.SEMICOLON || tokenType == PrismioTypes.RBRACE) {
+        } else if (tokenType == PrismioTypes.RBRACE) {
           waitingForBody = false;
         }
       }

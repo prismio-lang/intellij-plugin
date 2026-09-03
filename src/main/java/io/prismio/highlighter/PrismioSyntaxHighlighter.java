@@ -9,7 +9,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
-import io.prismio.lexer.PrismioLexerAdapter;
+import io.prismio.lexer.PrismioLexer;
 import io.prismio.psi.PrismioTypes;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,8 +24,22 @@ public final class PrismioSyntaxHighlighter extends SyntaxHighlighterBase {
   public static final TextAttributesKey KEYWORD =
       createTextAttributesKey("PRISMIO_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD);
 
-  public static final TextAttributesKey TYPE_KEYWORD =
+  /** `Int`, `String`, `U64` — the compiler's own type table. */
+  public static final TextAttributesKey BUILTIN_TYPE =
       createTextAttributesKey("PRISMIO_TYPE", DefaultLanguageHighlighterColors.CLASS_NAME);
+
+  /** `List`, `Option`, `Box` — shipped in `std`, so a reference rather than a built-in. */
+  public static final TextAttributesKey STDLIB_TYPE = createTextAttributesKey(
+      "PRISMIO_STDLIB_TYPE", DefaultLanguageHighlighterColors.CLASS_REFERENCE);
+
+  /**
+   * `private`, `dyn`, `pin`, `produce` — words the parser gives meaning to in one
+   * position and treats as identifiers everywhere else. Its own key, defaulting
+   * to the keyword colour: a reader wants to see them, and anyone who would
+   * rather tell them apart from a reserved word can, without editing two colours.
+   */
+  public static final TextAttributesKey CONTEXTUAL_KEYWORD = createTextAttributesKey(
+      "PRISMIO_CONTEXTUAL_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD);
 
   // Literals
   public static final TextAttributesKey STRING =
@@ -62,6 +76,10 @@ public final class PrismioSyntaxHighlighter extends SyntaxHighlighterBase {
 
   public static final TextAttributesKey BLOCK_COMMENT = createTextAttributesKey(
       "PRISMIO_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT);
+
+  /** A `///` line. A convention rather than syntax, so it renders as documentation. */
+  public static final TextAttributesKey DOC_COMMENT = createTextAttributesKey(
+      "PRISMIO_DOC_COMMENT", DefaultLanguageHighlighterColors.DOC_COMMENT);
 
   // Identifiers
   public static final TextAttributesKey IDENTIFIER =
@@ -115,7 +133,13 @@ public final class PrismioSyntaxHighlighter extends SyntaxHighlighterBase {
 
   // Key arrays for faster lookup
   private static final TextAttributesKey[] KEYWORD_KEYS = new TextAttributesKey[] {KEYWORD};
-  private static final TextAttributesKey[] TYPE_KEYS = new TextAttributesKey[] {TYPE_KEYWORD};
+  private static final TextAttributesKey[] TYPE_KEYS = new TextAttributesKey[] {BUILTIN_TYPE};
+  private static final TextAttributesKey[] STDLIB_TYPE_KEYS =
+      new TextAttributesKey[] {STDLIB_TYPE};
+  private static final TextAttributesKey[] CONTEXTUAL_KEYWORD_KEYS =
+      new TextAttributesKey[] {CONTEXTUAL_KEYWORD};
+  private static final TextAttributesKey[] DOC_COMMENT_KEYS =
+      new TextAttributesKey[] {DOC_COMMENT};
   private static final TextAttributesKey[] STRING_KEYS = new TextAttributesKey[] {STRING};
   private static final TextAttributesKey[] NUMBER_KEYS = new TextAttributesKey[] {NUMBER};
   private static final TextAttributesKey[] BOOLEAN_KEYS = new TextAttributesKey[] {BOOLEAN};
@@ -136,7 +160,7 @@ public final class PrismioSyntaxHighlighter extends SyntaxHighlighterBase {
   @NotNull
   @Override
   public Lexer getHighlightingLexer() {
-    return new PrismioLexerAdapter();
+    return new PrismioLexer();
   }
 
   @Override
@@ -144,8 +168,12 @@ public final class PrismioSyntaxHighlighter extends SyntaxHighlighterBase {
     // Keywords
     if (tokenType.equals(PrismioTypes.KEYWORD))
       return KEYWORD_KEYS;
-    if (tokenType.equals(PrismioTypes.TYPE_KEYWORD))
+    if (tokenType.equals(PrismioTypes.CONTEXTUAL_KEYWORD))
+      return CONTEXTUAL_KEYWORD_KEYS;
+    if (tokenType.equals(PrismioTypes.BUILTIN_TYPE))
       return TYPE_KEYS;
+    if (tokenType.equals(PrismioTypes.STDLIB_TYPE))
+      return STDLIB_TYPE_KEYS;
 
     // Literals
     if (tokenType.equals(PrismioTypes.STRING_LITERAL))
@@ -157,16 +185,17 @@ public final class PrismioSyntaxHighlighter extends SyntaxHighlighterBase {
     if (tokenType.equals(PrismioTypes.BOOLEAN))
       return BOOLEAN_KEYS;
 
-    // Operators (specific and generic)
+    // Operators
     if (tokenType.equals(PrismioTypes.ARITHMETIC_OP) || tokenType.equals(PrismioTypes.RELATIONAL_OP)
-        || tokenType.equals(PrismioTypes.ASSIGNMENT_OP) || tokenType.equals(PrismioTypes.UNARY_OP)
-        || tokenType.equals(PrismioTypes.LOGICAL_OP) || tokenType.equals(PrismioTypes.COMPARISON)
-        || tokenType.equals(PrismioTypes.BITWISE) || tokenType.equals(PrismioTypes.ARROW)
-        || tokenType.equals(PrismioTypes.FAT_ARROW) || tokenType.equals(PrismioTypes.OPERATOR)) {
+        || tokenType.equals(PrismioTypes.ASSIGNMENT_OP)
+        || tokenType.equals(PrismioTypes.LOGICAL_OP) || tokenType.equals(PrismioTypes.BITWISE_OP)
+        || tokenType.equals(PrismioTypes.SHIFT_OP) || tokenType.equals(PrismioTypes.NEGATION)
+        || tokenType.equals(PrismioTypes.ARROW) || tokenType.equals(PrismioTypes.FAT_ARROW)
+        || tokenType.equals(PrismioTypes.RANGE)) {
       return OPERATOR_KEYS;
     }
 
-    // Separators (specific)
+    // Separators
     if (tokenType.equals(PrismioTypes.LPAREN) || tokenType.equals(PrismioTypes.RPAREN)
         || tokenType.equals(PrismioTypes.LBRACE) || tokenType.equals(PrismioTypes.RBRACE)
         || tokenType.equals(PrismioTypes.LBRACKET) || tokenType.equals(PrismioTypes.RBRACKET)) {
@@ -176,19 +205,20 @@ public final class PrismioSyntaxHighlighter extends SyntaxHighlighterBase {
       return COMMA_KEYS;
     if (tokenType.equals(PrismioTypes.DOT))
       return DOT_KEYS;
-    if (tokenType.equals(PrismioTypes.COLON) || tokenType.equals(PrismioTypes.SEMICOLON)) {
+    if (tokenType.equals(PrismioTypes.COLON)) {
       return SEMICOLON_KEYS;
     }
-
-    // Generic separator (backward compatibility)
-    if (tokenType.equals(PrismioTypes.SEPARATOR))
-      return SEPARATOR_KEYS;
+    if (tokenType.equals(PrismioTypes.OPTIONAL)) {
+      return OPERATOR_KEYS;
+    }
 
     // Comments
-    if (tokenType.equals(PrismioTypes.SINGLE_LINE_COMMENT))
+    if (tokenType.equals(PrismioTypes.LINE_COMMENT))
       return LINE_COMMENT_KEYS;
-    if (tokenType.equals(PrismioTypes.MULTILINE_COMMENT))
+    if (tokenType.equals(PrismioTypes.BLOCK_COMMENT))
       return BLOCK_COMMENT_KEYS;
+    if (tokenType.equals(PrismioTypes.DOC_COMMENT))
+      return DOC_COMMENT_KEYS;
 
     // Identifiers
     if (tokenType.equals(PrismioTypes.IDENTIFIER))

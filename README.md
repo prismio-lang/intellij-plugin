@@ -20,7 +20,9 @@
 
 This repository provides JetBrains IDE support for the [Prismio programming language](https://github.com/prismio-lang/prismio), including IntelliJ IDEA, CLion, GoLand, PyCharm, and WebStorm.
 
-Prismio (`.psm` files) is a compiled, statically typed systems language. The plugin currently provides the editor, navigation, and presentation layer for `.psm` files. Compiler-backed parsing, diagnostics, resolution, and execution integration remain separate post-v1 milestones.
+Prismio (`.psm` files) is a compiled, statically typed systems language; `build.ums` is its project manifest. The plugin provides the editor, navigation, and presentation layer for both. Compiler-backed parsing, diagnostics, resolution, and execution integration remain separate post-v1 milestones.
+
+The lexers here follow the compiler's own — `src/lexer/scanner.psm` for Prismio and `ums/parser/lexer.psm` for UMS — so the editor accepts what the compiler accepts and nothing else.
 
 ---
 
@@ -40,10 +42,34 @@ Prismio (`.psm` files) is a compiled, statically typed systems language. The plu
 | 🔗 **Delimiter Matching** | Auto-close `()`, `[]`, `{}`, `""`, `''`, and block comments (`/* */`) |
 | ↩️ **Smart Indentation** | Brace-aware blocks and consistent three-space block-comment continuation |
 | 💬 **Comment Toggling** | Line (`//`) and block (`/* */`) comment support via `Ctrl+/` and `Ctrl+Shift+/` |
-| ✅ **Find Usages** | Identifier-aware usage search and element descriptions |
+| ✅ **Find Usages** | Every name carries a reference, so usages are found and the symbol under the caret is highlighted |
+| 🎯 **Go to Declaration** | Cmd+Click and Cmd+B from a name to its declaration, across files; from an `import` to the module it names |
+| ✏️ **Rename** | Renaming a declaration rewrites the call sites that resolve to it |
 | 🎨 **Color Settings Page** | Fully configurable token colors in **Settings → Editor → Color Scheme → Prismio** |
 | 🔤 **Spellchecking** | Integrated spell-checker for strings and comments |
 | 📄 **New File Action** | Create `.psm` files from the **New** menu with a Prismio icon |
+
+### Prismio language coverage
+
+All 30 reserved words, including the ones a lexical grammar cannot help with: the word operators `and` and `or`, and the contextual keywords `public`, `private`, `internal`, `dyn`, `spawn`, `pin`, `unique`, `Self`, `type` and the FFI contracts `produce`, `borrow`, `alias`, `free`. Contextual keywords are a distinct token from reserved words, so a variable legitimately named `pin` is coloured as a variable.
+
+Block comments nest — `/* outer /* inner */ still open */` — matching the compiler's depth counting rather than ending at the first `*/`. Built-in types are told apart from the generic types the standard library ships, and `..` is a range rather than a malformed float.
+
+Reformatting preserves the token stream. That is checked against every `.psm` file in a real checkout, because a spacing table is easy to get subtly wrong: a rule meant for one token pair applies to every pair that matches it first, which is how `a and b` once became `aand b`.
+
+Resolution is by name. The compiler owns the type checker, so `point.distance()` finds every `distance` in the project rather than the one on `Point` — an honest list beats a confident wrong answer.
+
+### UMS manifests (`build.ums`)
+
+| Feature | Details |
+|---|---|
+| 🎨 **Position-aware highlighting** | A manifest has no keywords, so block names, property keys and declaration calls are recognised by where they sit. `library` is a target kind inside `targets` and a linker input inside `link` |
+| 🧠 **Completion** | Suggestions come from the enclosing block, using the same tables the annotator validates against — the editor never offers a name it would then warn about |
+| ⚠️ **Unknown-name warnings** | A weak warning naming what *is* valid there. Never an error: UMS parses new blocks before its model learns them, so a manifest may legitimately be newer than this plugin |
+| ✏️ **Formatting** | Four-space blocks, `key = value` spacing, tight call parentheses |
+| 🗂️ **Structure View** | The block tree, each node labelled with its first argument — `executable("prismio")`, not a bare `executable` |
+| 💬 **Comments** | Both `//` and `#` are read; `Ctrl+/` writes `//` |
+| 📄 **New UMS Manifest** | From the **New** menu, pre-filled with a project and one executable target |
 
 ---
 
@@ -91,7 +117,6 @@ The distributable plugin zip will be placed in `build/distributions/`.
 intellij-plugin/
 ├── src/
 │   ├── main/
-│   │   ├── gen/io/prismio/       # Generated lexer, parser, and token types
 │   │   ├── java/io/prismio/
 │   │   │   ├── annotator/          # Semantic highlighting (functions, structs, enums)
 │   │   │   ├── completion/         # Code completion contributor
@@ -103,22 +128,22 @@ intellij-plugin/
 │   │   │   ├── handler/            # Typed & enter key handlers
 │   │   │   ├── highlighter/        # Lexer-based syntax highlighting
 │   │   │   ├── icons/              # Shared plugin icon registry
-│   │   │   ├── lexer/              # IntelliJ lexer adapter
+│   │   │   ├── lang/               # Keyword, type and module tables
+│   │   │   ├── lexer/              # Hand-written Prismio lexer
 │   │   │   ├── navigation/         # Structure view, symbols, and usages
 │   │   │   ├── parser/             # Parser definition
 │   │   │   ├── psi/                # File and token PSI support
 │   │   │   ├── settings/           # Color and code-style settings
 │   │   │   ├── spellcheck/         # Comment and string spellchecking
 │   │   │   ├── template/           # New Prismio File action
-│   │   │   ├── Prismio.bnf         # Grammar definition (GrammarKit BNF)
-│   │   │   ├── Prismio.flex        # JFlex lexer specification
+│   │   │   ├── ums/                # The UMS manifest language, end to end
 │   │   │   └── ...                 # Core language registrations
 │   │   └── resources/
 │   │       ├── META-INF/
 │   │       │   ├── plugin.xml      # Plugin descriptor & extension points
 │   │       │   └── pluginIcon.svg  # Plugin marketplace icon
 │   │       ├── colorSchemes/       # Light and dark semantic call colors
-│   │       ├── fileTemplates/      # .psm file template
+│   │       ├── fileTemplates/      # .psm and build.ums templates
 │   │       ├── icons/              # File type icons
 │   │       └── liveTemplates/      # Live template definitions
 │   └── test/                       # Platform fixture tests

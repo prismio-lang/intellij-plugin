@@ -14,7 +14,7 @@ public class PrismioParsingTest extends BasePlatformTestCase {
 
   public void testParsesCommentsCollectionsAndControlFlowWithoutErrors() {
     myFixture.configureByText(PrismioFileType.INSTANCE,
-        "/* values */ fn main() { let values = [1, 2, 3]; if true { // ok\n return } }");
+        "/* values /* nested */ */ fn main() { let values = [1, 2, 3] if true { // ok\n return } }");
 
     assertEmpty(PsiTreeUtil.findChildrenOfType(myFixture.getFile(), PsiErrorElement.class));
   }
