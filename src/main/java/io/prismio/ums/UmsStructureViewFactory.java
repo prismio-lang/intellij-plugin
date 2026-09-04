@@ -93,7 +93,7 @@ public final class UmsStructureViewFactory implements PsiStructureViewFactory {
 
         @Override
         public @Nullable Icon getIcon(boolean unused) {
-          return PrismioIcons.FILE;
+          return PrismioIcons.UMS;
         }
       };
     }

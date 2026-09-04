@@ -32,6 +32,6 @@ public final class UmsFileType extends LanguageFileType {
 
   @Override
   public Icon getIcon() {
-    return PrismioIcons.FILE;
+    return PrismioIcons.UMS;
   }
 }

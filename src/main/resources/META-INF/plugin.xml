@@ -270,7 +270,7 @@
                 class="io.prismio.ums.CreateUmsManifestAction"
                 text="UMS Manifest"
                 description="Create a Prismio project manifest"
-                icon="/icons/prismio.png">
+                icon="/icons/ums.png">
             <add-to-group group-id="NewGroup" anchor="after"
                           relative-to-action="io.prismio.action.createFile"/>
         </action>

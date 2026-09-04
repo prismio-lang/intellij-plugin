@@ -33,7 +33,7 @@ public final class UmsColorSettingsPage implements ColorSettingsPage {
 
   @Override
   public @Nullable Icon getIcon() {
-    return PrismioIcons.FILE;
+    return PrismioIcons.UMS;
   }
 
   @Override

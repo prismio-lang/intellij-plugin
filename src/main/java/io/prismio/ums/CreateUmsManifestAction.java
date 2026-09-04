@@ -20,7 +20,7 @@ public final class CreateUmsManifestAction extends CreateFileFromTemplateAction 
   protected void buildDialog(@NotNull Project project, @NotNull PsiDirectory directory,
       CreateFileFromTemplateDialog.Builder builder) {
     builder.setTitle("New UMS Manifest")
-        .addKind("UMS Manifest", PrismioIcons.FILE, "UmsManifest");
+        .addKind("UMS Manifest", PrismioIcons.UMS, "UmsManifest");
   }
 
   @Override
