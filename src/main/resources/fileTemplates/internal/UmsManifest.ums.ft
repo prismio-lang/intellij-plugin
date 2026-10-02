@@ -1,0 +1,11 @@
+project {
+    name = "${NAME}"
+    version = "0.1.0"
+    prismio = "0.1.0"
+}
+
+targets {
+    executable("${NAME}") {
+        entry = "src/main.psm"
+    }
+}

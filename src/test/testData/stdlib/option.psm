@@ -1,0 +1,18 @@
+// Option<T> and Result<T, E> -- signalling absence and failure without a
+// sentinel.
+
+enum Option<T> {
+    None,
+    Some(T)
+}
+
+impl<T> Option<T> {
+    public prop isSome(self) -> Bool {
+        return true
+    }
+
+    // The value, or `fallback` when there is none.
+    public fn unwrapOr(self, fallback: T) -> T {
+        return fallback
+    }
+}

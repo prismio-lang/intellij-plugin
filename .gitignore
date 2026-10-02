@@ -1,0 +1,64 @@
+# Build directories
+out/
+cmake-build-debug/
+cmake-build-release/
+build/
+bin/
+obj/
+
+# IDE directories
+.vs/
+.idea/
+.gradle/
+.intellijPlatform/
+
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+# System files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.a
+*.lib
+*.la
+*.lo
+*.pid
+*.gz
+*.zip
+*.tar
+*.7z
+*.rar
+
+# Dependencies
+node_modules/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.war
+*.ear
+
+# The graphify knowledge graph (`graphify update .`). Only the queryable products
+# are shared, as graphify's README recommends: a clone can query graph.json at
+# once, graph.html opens it in a browser, and `graphify update` re-anchors
+# manifest.json and rebuilds only what changed. The AST cache, cost.json, the
+# dated snapshots and the .graphify_* sidecars (absolute paths of this machine)
+# stay local.
+**/graphify-out/*
+!**/graphify-out/graph.json
+!**/graphify-out/graph.html
+!**/graphify-out/GRAPH_REPORT.md
+!**/graphify-out/manifest.json
+!**/graphify-out/wiki/
+!**/graphify-out/obsidian/

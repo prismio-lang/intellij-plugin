@@ -1,0 +1,348 @@
+<idea-plugin>
+    <id>io.prismio</id>
+    <name>Prismio</name>
+    <vendor url="https://prismio.org">
+        Prismio
+    </vendor>
+
+    <description><![CDATA[
+        <p>
+            Support for the <a href="https://prismio.org">Prismio</a> programming language:
+            <code>.psm</code> source files and <code>build.ums</code> project files.
+        </p>
+
+        <h3>Writing code</h3>
+        <ul>
+            <li>Syntax highlighting, with separate colours for types, functions, fields and variables</li>
+            <li>Completion that knows the type in front of the dot. Type <code>name.</code> and you get the methods of a <code>String</code></li>
+            <li>Imports are added for you. Pick <code>println</code> from the list and <code>import std.io</code> appears at the top</li>
+            <li>Errors from the compiler as you type, with a quick fix to add a missing import</li>
+            <li>Parameter hints while you fill in a call, and the type of a <code>let</code> shown inline</li>
+            <li>Formatting, folding, comment toggling, brace matching and live templates</li>
+        </ul>
+
+        <h3>Finding your way</h3>
+        <ul>
+            <li>Go to declaration, including from an <code>import</code> to the file it names</li>
+            <li>Find usages and rename</li>
+            <li>Structure view and Go to Symbol</li>
+            <li>Documentation from your <code>///</code> and <code>/** */</code> comments, rendered in the editor (turned on once, under Settings | Editor | General | Appearance)</li>
+        </ul>
+
+        <h3>Starting a project</h3>
+        <ul>
+            <li><b>New Project | Prismio</b>: pick the compiler (auto-detected, with its version shown), optionally create a Git repository, and get a <code>build.ums</code> and a main program</li>
+            <li><b>New | UMS Manifest</b> adds a <code>build.ums</code> to a folder</li>
+        </ul>
+
+        <h3>Running</h3>
+        <ul>
+            <li>Your <code>build.ums</code> fills the run menu: one entry per executable, plus Build, Test and every command you declare</li>
+            <li>Run buttons in the gutter next to <code>fn main</code> and next to each target and command in <code>build.ums</code></li>
+            <li>Compiler errors in the output link back to the line, and program output keeps its colours</li>
+        </ul>
+
+        <h3>build.ums</h3>
+        <ul>
+            <li>Highlighting, completion and formatting</li>
+            <li>Warnings for names the build system does not know, and errors for values it will reject</li>
+            <li>Structure view of blocks, targets and commands</li>
+        </ul>
+
+        <h3>Getting started</h3>
+        <p>
+            Install the Prismio toolchain. The plugin looks for <code>prismio</code> on your PATH;
+            to use a different compiler, set it in
+            <b>Settings | Languages &amp; Frameworks | Prismio</b>. Completion and error checking
+            follow the version of the compiler you pick.
+        </p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+        <h3>0.1.0</h3>
+        <p>First release.</p>
+        <ul>
+            <li>Highlighting, formatting and folding for <code>.psm</code> and <code>build.ums</code></li>
+            <li>Type-aware completion with automatic imports</li>
+            <li>Compiler errors as you type, with import quick fixes</li>
+            <li>Go to declaration, find usages and rename</li>
+            <li>Parameter hints and inline type hints</li>
+            <li>Run configurations created from <code>build.ums</code>, with coloured output</li>
+            <li>New Project wizard and New | UMS Manifest</li>
+        </ul>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.spellchecker</depends>
+    <depends>com.intellij.modules.xdebugger</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- File | New | Project | Prismio -->
+        <newProjectWizard.generator implementation="io.prismio.wizard.PrismioNewProjectWizard"/>
+        <!-- The same, in the IDEs that list DirectoryProjectGenerators instead: CLion, PyCharm, WebStorm... -->
+        <directoryProjectGenerator implementation="io.prismio.wizard.PrismioDirectoryProjectGenerator"/>
+
+        <!-- File Type -->
+        <fileType
+                name="Prismio File"
+                implementationClass="io.prismio.PrismioFileType"
+                fieldName="INSTANCE"
+                language="Prismio"
+                extensions="psm"/>
+
+        <!-- Parser and Lexer -->
+        <lang.parserDefinition
+                language="Prismio"
+                implementationClass="io.prismio.parser.PrismioParserDefinition"/>
+
+        <!-- Syntax Highlighting -->
+        <lang.syntaxHighlighterFactory
+                language="Prismio"
+                implementationClass="io.prismio.highlighter.PrismioSyntaxHighlighterFactory"/>
+
+        <!-- Color Settings -->
+        <colorSettingsPage
+                implementation="io.prismio.settings.PrismioColorSettingsPage"/>
+
+        <!-- Readable call colors tuned separately for light and dark schemes. -->
+        <additionalTextAttributes scheme="Default" file="colorSchemes/PrismioDefault.xml"/>
+        <additionalTextAttributes scheme="Darcula" file="colorSchemes/PrismioDarcula.xml"/>
+
+        <!-- Annotator for Semantic Highlighting -->
+        <annotator
+                language="Prismio"
+                implementationClass="io.prismio.annotator.PrismioAnnotator"/>
+
+        <!-- External Annotator for Real-Time Compiler Diagnostics -->
+        <externalAnnotator
+                language="Prismio"
+                implementationClass="io.prismio.annotator.PrismioExternalAnnotator"/>
+
+        <!-- Code Completion -->
+        <completion.contributor
+                language="Prismio"
+                implementationClass="io.prismio.completion.PrismioCompletionContributor"/>
+
+        <!-- Signatures over a call's arguments (Ctrl+P), overloads from the toolchain's library -->
+        <codeInsight.parameterInfo
+                language="Prismio"
+                implementationClass="io.prismio.completion.PrismioParameterInfoHandler"/>
+
+        <!-- `: Type` after a `let` that does not write one -->
+        <codeInsight.declarativeInlayProvider
+                language="Prismio"
+                implementationClass="io.prismio.hints.PrismioTypeHintsProvider"
+                isEnabledByDefault="true"
+                group="TYPES_GROUP"
+                providerId="prismio.let.types"
+                bundle="messages.PrismioBundle"
+                nameKey="inlay.types.name"
+                descriptionKey="inlay.types.description"/>
+
+        <!-- Code Formatting -->
+        <lang.formatter
+                language="Prismio"
+                implementationClass="io.prismio.formatter.PrismioFormattingModelBuilder"/>
+        <postFormatProcessor
+                implementation="io.prismio.formatter.PrismioBlockCommentPostFormatProcessor"/>
+
+        <!-- Function Body Folding -->
+        <lang.foldingBuilder
+                language="Prismio"
+                implementationClass="io.prismio.folding.PrismioFoldingBuilder"/>
+
+        <!-- Code Style Settings -->
+        <codeStyleSettingsProvider
+                implementation="io.prismio.settings.PrismioCodeStyleSettingsProvider"/>
+
+        <langCodeStyleSettingsProvider
+                implementation="io.prismio.settings.PrismioLanguageCodeStyleSettingsProvider"/>
+
+        <!-- Toolchain & Compiler Settings -->
+        <projectConfigurable
+                parentId="language"
+                id="io.prismio.settings"
+                displayName="Prismio"
+                instance="io.prismio.settings.PrismioSettingsConfigurable"/>
+
+        <!-- Comment Support -->
+        <lang.commenter
+                language="Prismio"
+                implementationClass="io.prismio.editor.PrismioCommenter"/>
+
+        <!-- Brace Matching -->
+        <lang.braceMatcher
+                language="Prismio"
+                implementationClass="io.prismio.editor.PrismioBraceMatcher"/>
+
+        <!-- Quote Handler -->
+        <lang.quoteHandler
+                language="Prismio"
+                implementationClass="io.prismio.editor.PrismioQuoteHandler"/>
+
+        <!-- Typed Handler for Auto-completion -->
+        <typedHandler
+                implementation="io.prismio.handler.PrismioTypedHandler"/>
+
+        <!-- Enter Handler for Indentation -->
+        <enterHandlerDelegate
+                implementation="io.prismio.handler.PrismioEnterHandler"/>
+
+        <!-- Structure View -->
+        <lang.psiStructureViewFactory
+                language="Prismio"
+                implementationClass="io.prismio.navigation.PrismioStructureViewFactory"/>
+
+        <!-- File Templates -->
+        <internalFileTemplate name="PrismioFile"/>
+        <internalFileTemplate name="UmsManifest"/>
+
+        <!-- Find Usages -->
+        <lang.findUsagesProvider
+                language="Prismio"
+                implementationClass="io.prismio.navigation.PrismioFindUsagesProvider"/>
+
+        <!-- Documentation Provider -->
+        <lang.documentationProvider
+                language="Prismio"
+                implementationClass="io.prismio.documentation.PrismioDocumentationProvider"/>
+
+        <!-- Toggle Rendered View for /** documentation comments -->
+        <platform.backend.documentation.inlineDocumentationProvider
+                implementation="io.prismio.documentation.PrismioInlineDocumentationProvider"/>
+
+        <!-- Spellchecking -->
+        <spellchecker.support
+                language="Prismio"
+                implementationClass="io.prismio.spellcheck.PrismioSpellcheckingStrategy"/>
+
+        <!-- Identifier tokens get a PSI class of their own, which is what lets
+             them carry a reference. Find Usages and highlight-usages-under-caret
+             are built on references; a plain leaf is never asked for any, so
+             both silently reported nothing. -->
+        <lang.ast.factory
+                language="Prismio"
+                implementationClass="io.prismio.psi.PrismioAstFactory"/>
+
+        <!-- Rename rewrites each resolved reference through a manipulator. -->
+        <lang.elementManipulator
+                forClass="io.prismio.psi.PrismioIdentifier"
+                implementationClass="io.prismio.psi.PrismioIdentifierManipulator"/>
+
+        <!-- Go to Declaration: Cmd+Click and Cmd+B on a name -->
+        <gotoDeclarationHandler
+                implementation="io.prismio.navigation.PrismioGotoDeclarationHandler"/>
+
+        <!-- Go to Symbol -->
+        <gotoSymbolContributor
+                implementation="io.prismio.navigation.PrismioChooseByNameContributor"/>
+
+        <!-- Gutter Run Line Marker for fn main() -->
+        <runLineMarkerContributor
+                language="Prismio"
+                implementationClass="io.prismio.execution.PrismioRunLineMarkerContributor"/>
+
+        <!-- Run Configurations -->
+        <configurationType
+                implementation="io.prismio.execution.PrismioRunConfigurationType"/>
+        <runConfigurationProducer
+                implementation="io.prismio.execution.PrismioRunConfigurationProducer"/>
+
+        <!-- The run widget lists what build.ums declares: Build, Run <executable>,
+             Test and every `command`, and follows the manifest as it changes. -->
+        <postStartupActivity implementation="io.prismio.execution.UmsRunConfigurations$Startup"/>
+        <!-- Documentation comments render, once, by default -->
+        <postStartupActivity implementation="io.prismio.documentation.PrismioDocRenderDefault"/>
+        <runConfigurationProducer
+                implementation="io.prismio.execution.UmsRunConfigurationProducer"/>
+        <runLineMarkerContributor
+                language="UMS"
+                implementationClass="io.prismio.execution.UmsRunLineMarkerContributor"/>
+
+        <!-- ============================================================
+             UMS manifests (build.ums)
+
+             A separate language from Prismio: `ums/ARCHITECTURE.md` states the
+             manifest DSL deliberately does not reuse the Prismio grammar, and
+             the two disagree on comments, literals and structure.
+             ============================================================ -->
+        <fileType
+                name="UMS Manifest"
+                implementationClass="io.prismio.ums.UmsFileType"
+                fieldName="INSTANCE"
+                language="UMS"
+                extensions="ums"
+                fileNames="build.ums"/>
+
+        <lang.parserDefinition
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsParserDefinition"/>
+
+        <lang.syntaxHighlighterFactory
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsSyntaxHighlighterFactory"/>
+
+        <colorSettingsPage implementation="io.prismio.ums.UmsColorSettingsPage"/>
+
+        <!-- Colours the names the manifest system recognises, and warns about
+             the ones it does not. A manifest has no keywords, so this is the
+             only place that distinction can be drawn. -->
+        <annotator
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsAnnotator"/>
+
+        <completion.contributor
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsCompletionContributor"/>
+
+        <lang.formatter
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsFormattingModelBuilder"/>
+
+        <lang.commenter
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsCommenter"/>
+
+        <lang.braceMatcher
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsBraceMatcher"/>
+
+        <lang.quoteHandler
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsQuoteHandler"/>
+
+        <lang.psiStructureViewFactory
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsStructureViewFactory"/>
+
+        <spellchecker.support
+                language="UMS"
+                implementationClass="io.prismio.ums.UmsSpellcheckingStrategy"/>
+
+        <!-- Gutter Line Breakpoints -->
+        <xdebugger.breakpointType
+                implementation="io.prismio.debugger.PrismioLineBreakpointType"/>
+    </extensions>
+
+    <actions>
+        <!-- New File Action -->
+        <action
+                id="io.prismio.action.createFile"
+                class="io.prismio.template.CreatePrismioFileAction"
+                text="Prismio File"
+                description="Create new Prismio file"
+                icon="/icons/prismio.png">
+            <add-to-group group-id="NewGroup" anchor="first"/>
+        </action>
+
+        <action
+                id="io.prismio.action.createManifest"
+                class="io.prismio.ums.CreateUmsManifestAction"
+                text="UMS Manifest"
+                description="Create a Prismio project manifest"
+                icon="/icons/ums.svg">
+            <add-to-group group-id="NewGroup" anchor="after"
+                          relative-to-action="io.prismio.action.createFile"/>
+        </action>
+    </actions>
+</idea-plugin>

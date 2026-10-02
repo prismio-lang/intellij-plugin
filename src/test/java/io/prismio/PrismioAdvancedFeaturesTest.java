@@ -1,0 +1,291 @@
+package io.prismio;
+
+import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.execution.filters.Filter;
+import com.intellij.execution.lineMarker.RunLineMarkerContributor;
+import com.intellij.psi.PsiElement;
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
+import io.prismio.annotator.PrismioDiagnostic;
+import io.prismio.annotator.PrismioDiagnosticParser;
+import io.prismio.execution.PrismioConsoleFilter;
+import io.prismio.execution.PrismioRunLineMarkerContributor;
+import io.prismio.navigation.PrismioGotoDeclarationHandler;
+import java.util.List;
+
+public class PrismioAdvancedFeaturesTest extends BasePlatformTestCase {
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    io.prismio.toolchain.PrismioProjectSettings.getInstance(getProject()).getState().stdlibPath =
+        PrismioSmartCompletionTest.STDLIB;
+  }
+
+
+  private PsiElement[] targetsAtCaret(String source) {
+    myFixture.configureByText(PrismioFileType.INSTANCE, source);
+    int offset = myFixture.getCaretOffset();
+    PsiElement at = myFixture.getFile().findElementAt(offset);
+    return new PrismioGotoDeclarationHandler()
+        .getGotoDeclarationTargets(at, offset, myFixture.getEditor());
+  }
+
+  public void testLocalVariableResolution() {
+    PsiElement[] targets = targetsAtCaret("""
+        fn test() -> Int {
+            let myLocal = 42
+            return myLo<caret>cal + 1
+        }
+        """);
+    assertNotNull("local variable should resolve", targets);
+    assertEquals(1, targets.length);
+    assertEquals("myLocal", targets[0].getText());
+  }
+
+  public void testFunctionParameterResolution() {
+    PsiElement[] targets = targetsAtCaret("""
+        fn calculate(myParam: Int) -> Int {
+            return myPa<caret>ram * 2
+        }
+        """);
+    assertNotNull("function parameter should resolve", targets);
+    assertEquals(1, targets.length);
+    assertEquals("myParam", targets[0].getText());
+  }
+
+  public void testStructFieldResolution() {
+    PsiElement[] targets = targetsAtCaret("""
+        struct Point {
+            x: Int,
+            y: Int
+        }
+
+        fn getX(p: Point) -> Int {
+            return p.<caret>x
+        }
+        """);
+    assertNotNull("struct field should resolve", targets);
+    assertEquals(1, targets.length);
+    assertEquals("x", targets[0].getText());
+  }
+
+  public void testLocalVariableAndParameterCompletion() {
+    myFixture.configureByText(PrismioFileType.INSTANCE, """
+        fn compute(myParam: Int) -> Int {
+            let myLocal = 10
+            my<caret>
+        }
+        """);
+    myFixture.complete(CompletionType.BASIC);
+    List<String> suggestions = myFixture.getLookupElementStrings();
+    assertNotNull(suggestions);
+    assertContainsElements(suggestions, "myLocal", "myParam");
+  }
+
+  public void testImportStdModuleCompletion() {
+    myFixture.configureByText(PrismioFileType.INSTANCE, "import std.<caret>");
+    myFixture.complete(CompletionType.BASIC);
+    List<String> suggestions = myFixture.getLookupElementStrings();
+    assertNotNull(suggestions);
+    // From the toolchain's library, so a module that does not exist (`std.list`
+    // became `std.vec`) is not offered.
+    assertContainsElements(suggestions, "io", "string", "vec", "option");
+    assertDoesntContain(suggestions, "list");
+  }
+
+  public void testDiagnosticParser() {
+    String jsonOutput = """
+        {"kind":"diagnostic","schemaVersion":1,"severity":"error","code":"P4001","file":"src/main.psm","line":12,"column":5,"length":4,"message":"unknown name `item`"}
+        {"kind":"summary","schemaVersion":1,"errors":1,"warnings":0}
+        """;
+    List<PrismioDiagnostic> diagnostics = PrismioDiagnosticParser.parseOutput(jsonOutput);
+    assertEquals(1, diagnostics.size());
+    PrismioDiagnostic diag = diagnostics.get(0);
+    assertEquals("error", diag.severity());
+    assertEquals("P4001", diag.code());
+    assertEquals("src/main.psm", diag.file());
+    assertEquals(12, diag.line());
+    assertEquals(5, diag.column());
+    assertEquals(4, diag.length());
+    assertEquals("unknown name `item`", diag.message());
+  }
+
+  public void testConsoleFilterMatchesLocation() {
+    myFixture.addFileToProject("src/main.psm", "fn main() {}\n");
+    PrismioConsoleFilter filter = new PrismioConsoleFilter(getProject());
+    String line = "src/main.psm:1:1: error[P4001]: unknown name";
+    Filter.Result result = filter.applyFilter(line, line.length());
+    assertNotNull("console filter should match error line", result);
+    assertNotNull("result should include hyperlink", result.getFirstHyperlinkInfo());
+  }
+
+  public void testRunLineMarkerOnMainFunction() {
+    myFixture.configureByText(PrismioFileType.INSTANCE, """
+        fn helper() -> Int { return 1 }
+        fn main() -> Int { return 0 }
+        """);
+
+    PrismioRunLineMarkerContributor contributor = new PrismioRunLineMarkerContributor();
+
+    // Caret on 'main'
+    int mainOffset = myFixture.getFile().getText().indexOf("main");
+    PsiElement mainElement = myFixture.getFile().findElementAt(mainOffset);
+    assertNotNull(mainElement);
+    RunLineMarkerContributor.Info mainInfo = contributor.getInfo(mainElement);
+    assertNotNull("main function should have a run line marker", mainInfo);
+
+    // Caret on 'helper'
+    int helperOffset = myFixture.getFile().getText().indexOf("helper");
+    PsiElement helperElement = myFixture.getFile().findElementAt(helperOffset);
+    assertNotNull(helperElement);
+    RunLineMarkerContributor.Info helperInfo = contributor.getInfo(helperElement);
+    assertNull("helper function should not have a run line marker", helperInfo);
+  }
+
+  public void testFunctionCompletionInsertsParenthesesWithoutSpace() {
+    myFixture.configureByText(PrismioFileType.INSTANCE, """
+        fn cliVersion() -> Int { return 1 }
+        fn main() {
+            cliVer<caret>
+        }
+        """);
+    myFixture.completeBasic();
+    if (myFixture.getLookup() != null) {
+      myFixture.type('\n');
+    }
+    String text = myFixture.getFile().getText();
+    assertTrue("Expected cliVersion() without space, got:\n" + text, text.contains("cliVersion()"));
+    assertFalse("Should not have space before parens", text.contains("cliVersion ()"));
+    // No parameters, so nothing to type between the parentheses: the caret goes past them.
+    int afterParens = text.lastIndexOf("cliVersion()") + "cliVersion()".length();
+    assertEquals("Caret should be placed after the parentheses", afterParens, myFixture.getCaretOffset());
+  }
+
+  public void testFunctionWithParametersPutsCaretInsideParentheses() {
+    myFixture.configureByText(PrismioFileType.INSTANCE, """
+        fn scale(by: Int) -> Int { return by }
+        fn main() {
+            sca<caret>
+        }
+        """);
+    myFixture.completeBasic();
+    if (myFixture.getLookup() != null) {
+      myFixture.type('\n');
+    }
+    String text = myFixture.getFile().getText();
+    int insideParens = text.lastIndexOf("scale(") + "scale(".length();
+    assertEquals("Caret should be placed inside parentheses", insideParens, myFixture.getCaretOffset());
+  }
+
+  public void testBuiltinFunctionCompletionInsertsParenthesesWithoutSpace() {
+    myFixture.configureByText(PrismioFileType.INSTANCE, """
+        fn main() {
+            prin<caret>
+        }
+        """);
+    myFixture.completeBasic();
+    var elements = myFixture.getLookupElements();
+    assertNotNull(elements);
+    for (var item : elements) {
+      if ("print".equals(item.getLookupString())) {
+        myFixture.getLookup().setCurrentItem(item);
+        myFixture.type('\n');
+        break;
+      }
+    }
+    assertTrue("Should contain print() without space", myFixture.getFile().getText().contains("print()"));
+    assertFalse("Should not contain 'print ()'", myFixture.getFile().getText().contains("print ()"));
+  }
+
+  public void testBlockCommentFormatting() {
+    String original = "/*\nascdc\n   ajkfa\n*/";
+    String formatted = io.prismio.formatter.PrismioBlockCommentPostFormatProcessor.formatBlockComment(original, "");
+    assertEquals("/*\n   ascdc\n   ajkfa\n*/", formatted);
+  }
+
+  public void testIndentedBlockCommentFormatting() {
+    String original = "/*\n    ascdc\n       ajkfa\n    */";
+    String formatted = io.prismio.formatter.PrismioBlockCommentPostFormatProcessor.formatBlockComment(original, "    ");
+    assertEquals("/*\n       ascdc\n       ajkfa\n    */", formatted);
+  }
+
+  public void testReformatBlockCommentWithCodeStyleManager() {
+    myFixture.configureByText(PrismioFileType.INSTANCE, """
+        /*
+        ascdc
+           ajkfa
+        */
+        fn main() -> Int { return 0 }
+        """);
+    com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+      com.intellij.psi.codeStyle.CodeStyleManager.getInstance(getProject()).reformat(myFixture.getFile());
+    });
+    String expected = """
+        /*
+           ascdc
+           ajkfa
+        */
+        fn main() -> Int { return 0 }
+        """;
+    assertEquals(expected.trim(), myFixture.getFile().getText().trim());
+  }
+
+  /** A documentation comment is formatted as the block comment it is to the compiler. */
+  public void testReformatDocumentationCommentWithCodeStyleManager() {
+    myFixture.configureByText(PrismioFileType.INSTANCE, """
+        /**
+        ascdc
+           ajkfa
+        */
+        fn main() -> Int { return 0 }
+        """);
+    com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+      com.intellij.psi.codeStyle.CodeStyleManager.getInstance(getProject()).reformat(myFixture.getFile());
+    });
+    String expected = """
+        /**
+           ascdc
+           ajkfa
+        */
+        fn main() -> Int { return 0 }
+        """;
+    assertEquals(expected.trim(), myFixture.getFile().getText().trim());
+  }
+
+  public void testIndentedDocumentationCommentFormatting() {
+    String original = "/**\n    ascdc\n       ajkfa\n    */";
+    assertEquals("/**\n       ascdc\n       ajkfa\n    */",
+        io.prismio.formatter.PrismioBlockCommentPostFormatProcessor.formatBlockComment(original, "    "));
+  }
+
+  /** Star-per-line comments keep their stars aligned under the opener; the formatter must not flatten them. */
+  public void testStarredDocumentationCommentKeepsItsStars() {
+    String original = "/**\n * Adds one.\n *   Indented note.\n */";
+    assertEquals(original,
+        io.prismio.formatter.PrismioBlockCommentPostFormatProcessor.formatBlockComment(original, ""));
+    assertEquals("/**\n     * Adds one.\n     */",
+        io.prismio.formatter.PrismioBlockCommentPostFormatProcessor.formatBlockComment(
+            "/**\n* Adds one.\n  */", "    "));
+  }
+
+  public void testHyphenatedImportNavigation() {
+    myFixture.addFileToProject("src/stack-placement.psm", "struct Point { x: Int }\n");
+    PsiElement[] targets = targetsAtCaret("""
+        import stack-place<caret>ment
+
+        fn main() -> Int { return 0 }
+        """);
+    assertNotNull("hyphenated import should navigate", targets);
+    assertEquals(1, targets.length);
+    assertEquals("stack-placement.psm", targets[0].getContainingFile().getName());
+  }
+
+  public void testImportCompletionIncludesSourceFilesAndFolders() {
+    myFixture.addFileToProject("src/stack-placement.psm", "struct Point {}\n");
+    myFixture.addFileToProject("src/flags/options.psm", "struct Flags {}\n");
+    myFixture.configureByText(PrismioFileType.INSTANCE, "import <caret>\n");
+    myFixture.completeBasic();
+    List<String> suggestions = myFixture.getLookupElementStrings();
+    assertNotNull(suggestions);
+    assertContainsElements(suggestions, "std", "stack-placement");
+  }
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<list>
+    <option name="PRISMIO_FUNCTION_CALL">
+        <value>
+            <option name="FOREGROUND" value="675A00"/>
+        </value>
+    </option>
+    <option name="PRISMIO_METHOD_CALL">
+        <value>
+            <option name="FOREGROUND" value="675A00"/>
+        </value>
+    </option>
+</list>
